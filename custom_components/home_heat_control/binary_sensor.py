@@ -7,12 +7,11 @@ from .const import (
 )
 from datetime import datetime
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import CONF_NAME, UnitOfEnergy, UnitOfPower
-from homeassistant.components.sensor import (
+from homeassistant.const import CONF_NAME
+from homeassistant.components.binary_sensor import (
     PLATFORM_SCHEMA,
-    SensorEntity,
-    SensorDeviceClass,
-    SensorStateClass
+    BinarySensorEntity,
+    BinarySensorDeviceClass
 )
 
 from homeassistant.core import callback
@@ -33,14 +32,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     entities = []
     for sensor_info in HHCSENSOR_TYPES.values():
-        if (sensor_info[0] == 0):
-            sensor = HHCSensor(
+        if (sensor_info[0] == 1):
+            sensor = HHCBinarySensor(
                 conf_name,
                 hub,
                 device_info,
                 sensor_info[1],
                 sensor_info[2],
-                sensor_info[3],
+                #not used for binary sensor:   sensor_info[3],
                 sensor_info[4],
                 sensor_info[5],
             )
@@ -49,20 +48,18 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(entities)
     return True
 
-class SensorBase(SensorEntity):
-    """Representation of an HHC sensor."""
+class BinarySensorBase(BinarySensorEntity):
+    """Representation of an binary HHC sensor."""
 
-    def __init__(self, platform_name, hub, device_info, name, key, unit, sensorclass, icon):
+    def __init__(self, platform_name, hub, device_info, name, key, deviceclass, icon):
         """Initialize the sensor."""
         self._platform_name = platform_name
         self._hub = hub
         self._key = key
         self._name = name
-        self._unit_of_measurement = unit
-        self._attr_device_class = sensorclass
         self._icon = icon
         self._device_info = device_info
-        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_device_class = deviceclass
 
     async def async_added_to_hass(self):
         """Register callbacks."""
@@ -81,15 +78,6 @@ class SensorBase(SensorEntity):
             self._state = self._hub.data[self._key]
 
     @property
-    def unit_of_measurement(self):
-        return self._unit_of_measurement
-
-    @property
-    def icon(self):
-        """Return the sensor icon."""
-        return self._icon
-
-    @property
     def should_poll(self) -> bool:
         """Data is delivered by the hub"""
         return False
@@ -97,12 +85,19 @@ class SensorBase(SensorEntity):
     @property
     def device_info(self) -> Optional[Dict[str, Any]]:
         return self._device_info
-
-
-class HHCSensor(SensorBase):
-    def __init__(self, platform_name, hub, device_info, name, key, unit, sensorclass, icon):
-        super().__init__(platform_name, hub, device_info, name, key, unit, sensorclass, icon)
+    
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if sensor is on."""
+        if self._key in self._hub.data:
+            return self._hub.data[self._key]
+        
+        
+class HHCBinarySensor(BinarySensorBase):
+    """Representation of an binary HHC sensor."""
+    def __init__(self, platform_name, hub, device_info, name, key, deviceclass, icon):
         """Initialize the sensor."""
+        super().__init__(platform_name, hub, device_info, name, key, deviceclass, icon)
         
     @property
     def name(self):
@@ -117,4 +112,5 @@ class HHCSensor(SensorBase):
     def state(self):
         """Return the state of the sensor."""
         if self._key in self._hub.data:
+            _attr_is_on = self._hub.data[self._key]
             return self._hub.data[self._key]

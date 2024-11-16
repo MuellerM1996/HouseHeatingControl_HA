@@ -136,7 +136,11 @@ class HomeHeatControl:
     def read_modbus_data(self):
         return (
             self.read_modbus_data_sw_Version(),
-            self.read_modbus_data_outsidetemperature()
+            self.read_modbus_data_dtc_active(),
+            self.read_modbus_data_outsidetemperature(),
+            self.read_modbus_data_room1temperature(),
+            self.read_modbus_data_room2temperature(),
+            self.read_modbus_data_doorbellstatus()
         )
 
     def read_modbus_data_sw_Version(self, start_address=0):
@@ -158,6 +162,19 @@ class HomeHeatControl:
         self.data["appl_sw_version"] = f"{appl_sw_version_major}.{appl_sw_version_minor}.{appl_sw_version_patch}"
         
         return True
+    
+    def read_modbus_data_dtc_active(self, start_address=3):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1) 
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
+        
+        dtc_active = (decoder.decode_16bit_uint() != 0)
+        self.data["dtcactive"] = dtc_active
+        
+        return True
 
     def read_modbus_data_outsidetemperature(self, start_address=20):
         """start reading data"""
@@ -177,5 +194,70 @@ class HomeHeatControl:
             self.data["outsidetemperature"] = "Fehler"
         else:
             self.data["outsidetemperature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_room1temperature(self, start_address=21):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if (temperature_raw == 0x7FFD):
+            self.data["room1temperature"] = "Nicht verbaut"
+        elif (temperature_raw == 0x7FFE):
+            self.data["room1temperature"] = "Init"
+        elif (temperature_raw == 0x7FFF):
+            self.data["room1temperature"] = "Fehler"
+        else:
+            self.data["room1temperature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_room2temperature(self, start_address=22):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if (temperature_raw == 0x7FFD):
+            self.data["room2temperature"] = "Nicht verbaut"
+        elif (temperature_raw == 0x7FFE):
+            self.data["room2temperature"] = "Init"
+        elif (temperature_raw == 0x7FFF):
+            self.data["room2temperature"] = "Fehler"
+        else:
+            self.data["room2temperature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_doorbellstatus(self, start_address=25):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        doorbellstatus = decoder.decode_16bit_uint()
+
+        if (doorbellstatus == 0):
+            self.data["doorbell_status"] = "Nicht verbaut"
+        elif (doorbellstatus == 1):
+            self.data["doorbell_status"] = "AUS"
+        elif (doorbellstatus == 2):
+            self.data["doorbell_status"] = "AN"
+        elif (doorbellstatus == 3):
+            self.data["doorbell_status"] = "Fehler"
+        else:
+            self.data["doorbell_status"] = None
         
         return True
