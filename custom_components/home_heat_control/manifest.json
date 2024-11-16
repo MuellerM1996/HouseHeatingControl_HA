@@ -1,6 +1,6 @@
 {
   "domain": "home_heat_control",
-  "name": "HeatControler",
+  "name": "HomeHeatController",
   "documentation": "nothing",
   "requirements": ["pymodbus==3.5.4"],
   "dependencies": [],
