@@ -20,4 +20,5 @@ HHCSENSOR_TYPES = {
     "FBL_SW_Version": [0, "FBL Software Version", "fbl_sw_version", None, None, None],
     "APPL_SW_Version": [0, "APPL Software Version", "appl_sw_version", None, None, None],
 #    "DTC_Active": [1, "Master DTCs Active", "dtcactive", None, BinarySensorDeviceClass.PROBLEM, None],
+    "Outside_Temperature": [0, "Außentemperatur", "outsidetemperature", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, None],
 }

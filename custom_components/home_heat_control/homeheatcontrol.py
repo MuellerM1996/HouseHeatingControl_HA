@@ -135,10 +135,11 @@ class HomeHeatControl:
             
     def read_modbus_data(self):
         return (
-            self.read_modbus_data_master_sw_Version()
+            self.read_modbus_data_sw_Version(),
+            self.read_modbus_data_outsidetemperature()
         )
 
-    def read_modbus_data_master_sw_Version(self, start_address=0):
+    def read_modbus_data_sw_Version(self, start_address=0):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=3)      
         if data_package.isError():
@@ -155,5 +156,26 @@ class HomeHeatControl:
 
         self.data["fbl_sw_version"] = f"{fbl_sw_version_major}.{fbl_sw_version_minor}.{fbl_sw_version_patch}"
         self.data["appl_sw_version"] = f"{appl_sw_version_major}.{appl_sw_version_minor}.{appl_sw_version_patch}"
+        
+        return True
+
+    def read_modbus_data_outsidetemperature(self, start_address=20):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if (temperature_raw == 0x7FFD):
+            self.data["outsidetemperature"] = "Nicht verbaut"
+        elif (temperature_raw == 0x7FFE):
+            self.data["outsidetemperature"] = "Init"
+        elif (temperature_raw == 0x7FFF):
+            self.data["outsidetemperature"] = "Fehler"
+        else:
+            self.data["outsidetemperature"] = temperature_raw/10
         
         return True
