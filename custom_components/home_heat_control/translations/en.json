@@ -1,0 +1,23 @@
+{
+  "config": {
+    "title": "Heat Controller",
+    "step": {
+      "user": {
+        "title": "Define Ethernet connection to your Heat Controller",
+        "data": {
+          "host": "The ip-address",
+          "name": "The prefix to be used for your Heat Controller sensors",
+          "port": "The TCP port on which to connect to the Heat Controller Modbus (Default = 502)",
+          "modbus_address": "The modbus address",
+          "scan_interval": "The modbus registers polling interval [s]"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Device is already configured"
+    },
+    "abort": {
+      "already_configured": "Device is already configured"
+    }
+  }
+}
