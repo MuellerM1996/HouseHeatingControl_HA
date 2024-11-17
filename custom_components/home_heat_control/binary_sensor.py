@@ -16,7 +16,8 @@ from homeassistant.const import (
 from homeassistant.components.binary_sensor import (
     PLATFORM_SCHEMA,
     BinarySensorEntity,
-    BinarySensorDeviceClass
+    BinarySensorDeviceClass,
+    BinarySensorEntityDescription
 )
 
 from homeassistant.core import callback
@@ -36,17 +37,13 @@ async def async_setup_entry(hass, entry, async_add_entities):
     }
 
     entities = []
-    for sensor_info in HHCSENSOR_TYPES.values():
+    for sensor_info in HHCSENSOR_TYPES:
         if (sensor_info[0] == 1):
             sensor = HHCBinarySensor(
                 conf_name,
                 hub,
                 device_info,
                 sensor_info[1],
-                sensor_info[2],
-                #not used for binary sensor:   sensor_info[3],
-                sensor_info[4],
-                sensor_info[5],
             )
             entities.append(sensor)
 
@@ -56,15 +53,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class HHCBinarySensor(BinarySensorEntity):
     """Representation of an binary HHC sensor."""
 
-    def __init__(self, platform_name, hub, device_info, name, key, deviceclass, icon):
+    def __init__(self, platform_name, hub, device_info, sensor: BinarySensorEntityDescription):
         """Initialize the sensor."""
+        self.entity_description = sensor
         self._platform_name = platform_name
         self._hub = hub
-        self._key = key
-        self._name = name
-        self._icon = icon
         self._device_info = device_info
-        self._attr_device_class = deviceclass
 
     async def async_added_to_hass(self):
         """Register callbacks."""
@@ -79,8 +73,8 @@ class HHCBinarySensor(BinarySensorEntity):
 
     @callback
     def _update_state(self):
-        if self._key in self._hub.data:
-            self._state = self._hub.data[self._key]
+        if self.entity_description.key in self._hub.data:
+            self._state = self._hub.data[self.entity_description.key]
 
     @property
     def should_poll(self) -> bool:
@@ -90,21 +84,16 @@ class HHCBinarySensor(BinarySensorEntity):
     @property
     def device_info(self) -> Optional[Dict[str, Any]]:
         return self._device_info
-    
-    @property
-    def name(self):
-        """Return the name."""
-        return f"{self._name}"
 
     @property
     def unique_id(self) -> Optional[str]:
-        return f"{self._platform_name}_{self._key}"
+        return f"{self._platform_name}_{self.entity_description.key}"
         
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self._key in self._hub.data:
-            self._attr_is_on = self._hub.data[self._key]
+        if self.entity_description.key in self._hub.data:
+            self._attr_is_on = self._hub.data[self.entity_description.key]
             if self._attr_is_on:
                 return STATE_ON
             else:

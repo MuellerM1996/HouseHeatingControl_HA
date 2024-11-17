@@ -39,7 +39,6 @@ class HomeHeatControl:
         """Listen for data updates."""
         # This is the first sensor, set up interval.
         if not self._sensors:
-           # self.connect()
             self._unsub_interval_method = async_track_time_interval(
                 self._hass, self.async_refresh_modbus_data, self._scan_interval
             )
@@ -252,9 +251,9 @@ class HomeHeatControl:
         if (doorbellstatus == 0):
             self.data["doorbell_status"] = "Nicht verbaut"
         elif (doorbellstatus == 1):
-            self.data["doorbell_status"] = "AUS"
+            self.data["doorbell_status"] = "Aus"
         elif (doorbellstatus == 2):
-            self.data["doorbell_status"] = "AN"
+            self.data["doorbell_status"] = "An"
         elif (doorbellstatus == 3):
             self.data["doorbell_status"] = "Fehler"
         else:

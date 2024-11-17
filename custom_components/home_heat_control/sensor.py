@@ -7,12 +7,16 @@ from .const import (
 )
 from datetime import datetime
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import CONF_NAME, UnitOfEnergy, UnitOfPower
+from homeassistant.const import (
+    CONF_NAME, 
+    UnitOfEnergy, 
+    UnitOfPower)
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA,
     SensorEntity,
     SensorDeviceClass,
-    SensorStateClass
+    SensorStateClass,
+    SensorEntityDescription
 )
 
 from homeassistant.core import callback
@@ -32,17 +36,13 @@ async def async_setup_entry(hass, entry, async_add_entities):
     }
 
     entities = []
-    for sensor_info in HHCSENSOR_TYPES.values():
+    for sensor_info in HHCSENSOR_TYPES:
         if (sensor_info[0] == 0):
             sensor = HHCSensor(
                 conf_name,
                 hub,
                 device_info,
                 sensor_info[1],
-                sensor_info[2],
-                sensor_info[3],
-                sensor_info[4],
-                sensor_info[5],
             )
             entities.append(sensor)
 
@@ -52,17 +52,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class HHCSensor(SensorEntity):
     """Representation of an HHC sensor."""
 
-    def __init__(self, platform_name, hub, device_info, name, key, unit, sensorclass, icon):
+    def __init__(self, platform_name, hub, device_info, sensor: SensorEntityDescription):
         """Initialize the sensor."""
+        self.entity_description = sensor
         self._platform_name = platform_name
         self._hub = hub
-        self._key = key
-        self._name = name
-        self._unit_of_measurement = unit
-        self._attr_device_class = sensorclass
-        self._icon = icon
         self._device_info = device_info
-        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     async def async_added_to_hass(self):
         """Register callbacks."""
@@ -77,17 +72,13 @@ class HHCSensor(SensorEntity):
 
     @callback
     def _update_state(self):
-        if self._key in self._hub.data:
-            self._state = self._hub.data[self._key]
-
-    @property
-    def unit_of_measurement(self):
-        return self._unit_of_measurement
+        if self.entity_description.key in self._hub.data:
+            self._state = self._hub.data[self.entity_description.key]
 
     @property
     def icon(self):
         """Return the sensor icon."""
-        return self._icon
+        return self.entity_description.icon
 
     @property
     def should_poll(self) -> bool:
@@ -97,19 +88,21 @@ class HHCSensor(SensorEntity):
     @property
     def device_info(self) -> Optional[Dict[str, Any]]:
         return self._device_info
-    
-    @property
-    def name(self):
-        """Return the name."""
-        return f"{self._name}"
 
     @property
     def unique_id(self) -> Optional[str]:
-        return f"{self._platform_name}_{self._key}"
+        return f"{self._platform_name}_{self.entity_description.key}"
+
+    @property
+    def unit_of_measurement(self):
+        if self.entity_description.key in self._hub.data:
+            if isinstance(self._hub.data[self.entity_description.key], float) or isinstance(self._hub.data[self.entity_description.key], int):
+                return self.entity_description.unit_of_measurement
+        return None
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self._key in self._hub.data:
-            return self._hub.data[self._key]
+        if self.entity_description.key in self._hub.data:
+            return self._hub.data[self.entity_description.key]
         
