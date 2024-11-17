@@ -24,4 +24,5 @@ HHCSENSOR_TYPES = {
     "Room1_Temperature": [0, "Raum 1 Temperatur", "room1temperature", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, None],
     "Room2_Temperature": [0, "Raum 2 Temperatur", "room2temperature", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, None],
     "Doorbell_Status": [0, "Türklingel Status", "doorbell_status", None, None, None],
+    "HeatControlManagementEnabled": [1, "Hauptschalter", "heatcontrolmanagement_enabled", None, None, None],
 }

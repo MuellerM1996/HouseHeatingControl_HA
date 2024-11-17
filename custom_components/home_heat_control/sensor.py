@@ -49,7 +49,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(entities)
     return True
 
-class SensorBase(SensorEntity):
+class HHCSensor(SensorEntity):
     """Representation of an HHC sensor."""
 
     def __init__(self, platform_name, hub, device_info, name, key, unit, sensorclass, icon):
@@ -97,13 +97,7 @@ class SensorBase(SensorEntity):
     @property
     def device_info(self) -> Optional[Dict[str, Any]]:
         return self._device_info
-
-
-class HHCSensor(SensorBase):
-    def __init__(self, platform_name, hub, device_info, name, key, unit, sensorclass, icon):
-        super().__init__(platform_name, hub, device_info, name, key, unit, sensorclass, icon)
-        """Initialize the sensor."""
-        
+    
     @property
     def name(self):
         """Return the name."""
@@ -118,3 +112,4 @@ class HHCSensor(SensorBase):
         """Return the state of the sensor."""
         if self._key in self._hub.data:
             return self._hub.data[self._key]
+        

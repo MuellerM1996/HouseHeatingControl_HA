@@ -140,7 +140,8 @@ class HomeHeatControl:
             self.read_modbus_data_outsidetemperature(),
             self.read_modbus_data_room1temperature(),
             self.read_modbus_data_room2temperature(),
-            self.read_modbus_data_doorbellstatus()
+            self.read_modbus_data_doorbellstatus(),
+            self.read_modbus_data_heatcontrolmanagement_active()
         )
 
     def read_modbus_data_sw_Version(self, start_address=0):
@@ -171,8 +172,7 @@ class HomeHeatControl:
             return False
         decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        dtc_active = (decoder.decode_16bit_uint() != 0)
-        self.data["dtcactive"] = dtc_active
+        self.data["dtcactive"] = decoder.decode_16bit_uint() != 0
         
         return True
 
@@ -259,5 +259,17 @@ class HomeHeatControl:
             self.data["doorbell_status"] = "Fehler"
         else:
             self.data["doorbell_status"] = None
+        
+        return True
+    
+    def read_modbus_data_heatcontrolmanagement_active(self, start_address=30):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1) 
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
+        
+        self.data["heatcontrolmanagement_enabled"] = decoder.decode_16bit_uint() != 0
         
         return True

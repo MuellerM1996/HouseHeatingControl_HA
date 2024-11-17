@@ -7,7 +7,12 @@ from .const import (
 )
 from datetime import datetime
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import CONF_NAME
+from homeassistant.const import (
+    CONF_NAME,
+    STATE_ON,
+    STATE_OFF,
+    STATE_UNKNOWN
+)
 from homeassistant.components.binary_sensor import (
     PLATFORM_SCHEMA,
     BinarySensorEntity,
@@ -48,7 +53,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(entities)
     return True
 
-class BinarySensorBase(BinarySensorEntity):
+class HHCBinarySensor(BinarySensorEntity):
     """Representation of an binary HHC sensor."""
 
     def __init__(self, platform_name, hub, device_info, name, key, deviceclass, icon):
@@ -87,19 +92,6 @@ class BinarySensorBase(BinarySensorEntity):
         return self._device_info
     
     @property
-    def is_on(self) -> bool | None:
-        """Return true if sensor is on."""
-        if self._key in self._hub.data:
-            return self._hub.data[self._key]
-        
-        
-class HHCBinarySensor(BinarySensorBase):
-    """Representation of an binary HHC sensor."""
-    def __init__(self, platform_name, hub, device_info, name, key, deviceclass, icon):
-        """Initialize the sensor."""
-        super().__init__(platform_name, hub, device_info, name, key, deviceclass, icon)
-        
-    @property
     def name(self):
         """Return the name."""
         return f"{self._name}"
@@ -107,10 +99,15 @@ class HHCBinarySensor(BinarySensorBase):
     @property
     def unique_id(self) -> Optional[str]:
         return f"{self._platform_name}_{self._key}"
-
+        
     @property
     def state(self):
         """Return the state of the sensor."""
         if self._key in self._hub.data:
-            _attr_is_on = self._hub.data[self._key]
-            return self._hub.data[self._key]
+            self._attr_is_on = self._hub.data[self._key]
+            if self._attr_is_on:
+                return STATE_ON
+            else:
+                return STATE_OFF
+        else:
+            return STATE_UNKNOWN
