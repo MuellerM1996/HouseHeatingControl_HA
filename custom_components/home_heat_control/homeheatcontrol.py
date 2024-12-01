@@ -236,11 +236,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["outsidetemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["outsidetemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["outsidetemperature"] = "Fehler"
         else:
             self.data["outsidetemperature"] = temperature_raw/10
@@ -257,11 +257,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["room1temperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["room1temperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["room1temperature"] = "Fehler"
         else:
             self.data["room1temperature"] = temperature_raw/10
@@ -278,11 +278,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["room2temperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["room2temperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["room2temperature"] = "Fehler"
         else:
             self.data["room2temperature"] = temperature_raw/10
@@ -299,13 +299,13 @@ class HomeHeatControl:
 
         doorbellstatus = decoder.decode_16bit_uint()
 
-        if (doorbellstatus == 0):
+        if doorbellstatus == 0:
             self.data["doorbell_status"] = "Nicht verbaut"
-        elif (doorbellstatus == 1):
+        elif doorbellstatus == 1:
             self.data["doorbell_status"] = "Aus"
-        elif (doorbellstatus == 2):
+        elif doorbellstatus == 2:
             self.data["doorbell_status"] = "An"
-        elif (doorbellstatus == 3):
+        elif doorbellstatus == 3:
             self.data["doorbell_status"] = "Fehler"
         else:
             self.data["doorbell_status"] = None
@@ -346,21 +346,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_1_status"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_1_status"] = "Aus - Manuell"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_1_status"] = "Aus - Timer"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_1_status"] = "Nachtbetrieb - Manuell"
-        elif (status == 4):
+        elif status == 4:
             self.data["heatcircuit_1_status"] = "Nachtbetrieb - Timer"
-        elif (status == 5):
+        elif status == 5:
             self.data["heatcircuit_1_status"] = "Tagbetrieb - Manuell"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_1_status"] = "Tagbetrieb - Timer"
-        elif (status == 7):
+        elif status == 7:
             self.data["heatcircuit_1_status"] = "Fehler"
         else:
             self.data["heatcircuit_1_status"] = None
@@ -377,13 +377,13 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_1_pumpstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_1_pumpstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_1_pumpstatus"] = "An"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_1_pumpstatus"] = "Fehler"
         else:
             self.data["heatcircuit_1_pumpstatus"] = None
@@ -400,21 +400,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_1_mixerstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_1_mixerstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_1_mixerstatus"] = "Normierung"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_1_mixerstatus"] = "Öffen - Langsam"
-        elif (status == 4):
+        elif status == 4:
             self.data["heatcircuit_1_mixerstatus"] = "Öffnen - Schnell"
-        elif (status == 5):
+        elif status == 5:
             self.data["heatcircuit_1_mixerstatus"] = "Schließen - Langsam"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_1_mixerstatus"] = "Schließen - Schnell"
-        elif (status == 7):
+        elif status == 7:
             self.data["heatcircuit_1_mixerstatus"] = "Fehler"
         else:
             self.data["heatcircuit_1_mixerstatus"] = None
@@ -443,7 +443,7 @@ class HomeHeatControl:
 
         position = decoder.decode_16bit_uint()
 
-        if (position > 100):
+        if position > 100:
             self.data["heatcircuit_1_mixerposition"] = None
         else:
             self.data["heatcircuit_1_mixerposition"] = position
@@ -460,7 +460,7 @@ class HomeHeatControl:
 
         temperature = decoder.decode_16bit_uint()
 
-        if (temperature > 100):
+        if temperature > 100:
             self.data["heatcircuit_1_targetForerunTemperature"] = None
         else:
             self.data["heatcircuit_1_targetForerunTemperature"] = temperature
@@ -477,11 +477,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["heatcircuit_1_forerunTemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["heatcircuit_1_forerunTemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["heatcircuit_1_forerunTemperature"] = "Fehler"
         else:
             self.data["heatcircuit_1_forerunTemperature"] = temperature_raw/10
@@ -498,11 +498,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["heatcircuit_1_returnflowTemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["heatcircuit_1_returnflowTemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["heatcircuit_1_returnflowTemperature"] = "Fehler"
         else:
             self.data["heatcircuit_1_returnflowTemperature"] = temperature_raw/10
@@ -519,21 +519,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_2_status"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_2_status"] = "Aus - Manuell"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_2_status"] = "Aus - Timer"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_2_status"] = "Nachtbetrieb - Manuell"
-        elif (status == 4):
+        elif status == 4:
             self.data["heatcircuit_2_status"] = "Nachtbetrieb - Timer"
-        elif (status == 5):
+        elif status == 5:
             self.data["heatcircuit_2_status"] = "Tagbetrieb - Manuell"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_2_status"] = "Tagbetrieb - Timer"
-        elif (status == 7):
+        elif status == 7:
             self.data["heatcircuit_2_status"] = "Fehler"
         else:
             self.data["heatcircuit_2_status"] = None
@@ -550,13 +550,13 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_2_pumpstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_2_pumpstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_2_pumpstatus"] = "An"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_2_pumpstatus"] = "Fehler"
         else:
             self.data["heatcircuit_2_pumpstatus"] = None
@@ -573,21 +573,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_2_mixerstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_2_mixerstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_2_mixerstatus"] = "Normierung"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_2_mixerstatus"] = "Öffen - Langsam"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_2_mixerstatus"] = "Öffnen - Schnell"
-        elif (status == 5):
+        elif status == 5:
             self.data["heatcircuit_2_mixerstatus"] = "Schließen - Langsam"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_2_mixerstatus"] = "Schließen - Schnell"
-        elif (status == 7):
+        elif status == 7:
             self.data["heatcircuit_2_mixerstatus"] = "Fehler"
         else:
             self.data["heatcircuit_2_mixerstatus"] = None
@@ -616,7 +616,7 @@ class HomeHeatControl:
 
         position = decoder.decode_16bit_uint()
 
-        if (position > 100):
+        if position > 100:
             self.data["heatcircuit_2_mixerposition"] = None
         else:
             self.data["heatcircuit_2_mixerposition"] = position
@@ -633,7 +633,7 @@ class HomeHeatControl:
 
         temperature = decoder.decode_16bit_uint()
 
-        if (temperature > 100):
+        if temperature > 100:
             self.data["heatcircuit_2_targetForerunTemperature"] = None
         else:
             self.data["heatcircuit_2_targetForerunTemperature"] = temperature
@@ -650,11 +650,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["heatcircuit_2_forerunTemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["heatcircuit_2_forerunTemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["heatcircuit_2_forerunTemperature"] = "Fehler"
         else:
             self.data["heatcircuit_2_forerunTemperature"] = temperature_raw/10
@@ -671,11 +671,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["heatcircuit_2_returnflowTemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["heatcircuit_2_returnflowTemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["heatcircuit_2_returnflowTemperature"] = "Fehler"
         else:
             self.data["heatcircuit_2_returnflowTemperature"] = temperature_raw/10
@@ -692,21 +692,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_3_status"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_3_status"] = "Aus - Manuell"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_3_status"] = "Aus - Timer"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_3_status"] = "Nachtbetrieb - Manuell"
-        elif (status == 4):
+        elif status == 4:
             self.data["heatcircuit_3_status"] = "Nachtbetrieb - Timer"
-        elif (status == 5):
+        elif status == 5:
             self.data["heatcircuit_3_status"] = "Tagbetrieb - Manuell"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_3_status"] = "Tagbetrieb - Timer"
-        elif (status == 7):
+        elif status == 7:
             self.data["heatcircuit_3_status"] = "Fehler"
         else:
             self.data["heatcircuit_3_status"] = None
@@ -723,13 +723,13 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_3_pumpstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_3_pumpstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_3_pumpstatus"] = "An"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_3_pumpstatus"] = "Fehler"
         else:
             self.data["heatcircuit_3_pumpstatus"] = None
@@ -746,21 +746,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["heatcircuit_3_mixerstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["heatcircuit_3_mixerstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["heatcircuit_3_mixerstatus"] = "Normierung"
-        elif (status == 3):
+        elif status == 3:
             self.data["heatcircuit_3_mixerstatus"] = "Öffen - Langsam"
-        elif (status == 4):
+        elif status == 4:
             self.data["heatcircuit_3_mixerstatus"] = "Öffnen - Schnell"
-        elif (status == 5):
+        elif status == 5:
             self.data["heatcircuit_3_mixerstatus"] = "Schließen - Langsam"
-        elif (status == 6):
+        elif status == 6:
             self.data["heatcircuit_3_mixerstatus"] = "Schließen - Schnell"
-        elif (status == 7):
+        elif status == 7:
             self.data["heatcircuit_3_mixerstatus"] = "Fehler"
         else:
             self.data["heatcircuit_3_mixerstatus"] = None
@@ -789,7 +789,7 @@ class HomeHeatControl:
 
         position = decoder.decode_16bit_uint()
 
-        if (position > 100):
+        if position > 100:
             self.data["heatcircuit_3_mixerposition"] = None
         else:
             self.data["heatcircuit_3_mixerposition"] = position
@@ -806,7 +806,7 @@ class HomeHeatControl:
 
         temperature = decoder.decode_16bit_uint()
 
-        if (temperature > 100):
+        if temperature > 100:
             self.data["heatcircuit_3_targetForerunTemperature"] = None
         else:
             self.data["heatcircuit_3_targetForerunTemperature"] = temperature
@@ -823,11 +823,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["heatcircuit_3_forerunTemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["heatcircuit_3_forerunTemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["heatcircuit_3_forerunTemperature"] = "Fehler"
         else:
             self.data["heatcircuit_3_forerunTemperature"] = temperature_raw/10
@@ -844,11 +844,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["heatcircuit_3_returnflowTemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["heatcircuit_3_returnflowTemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["heatcircuit_3_returnflowTemperature"] = "Fehler"
         else:
             self.data["heatcircuit_3_returnflowTemperature"] = temperature_raw/10
@@ -865,15 +865,15 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["bufferstorage_status"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["bufferstorage_status"] = "OK"
-        elif (status == 2):
+        elif status == 2:
             self.data["bufferstorage_status"] = "Kodierfehler"
-        elif (status == 3):
+        elif status == 3:
             self.data["bufferstorage_status"] = "Temperatursensorfehler"
-        elif (status == 4):
+        elif status == 4:
             self.data["bufferstorage_status"] = "Externer Fehler"
         else:
             self.data["bufferstorage_status"] = None
@@ -890,11 +890,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_top"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_1_temperature_top"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_1_temperature_top"] = "Fehler"
         else:
             self.data["bufferstorage_1_temperature_top"] = temperature_raw/10
@@ -911,11 +911,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_middletop"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_1_temperature_middletop"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_1_temperature_middletop"] = "Fehler"
         else:
             self.data["bufferstorage_1_temperature_middletop"] = temperature_raw/10
@@ -932,11 +932,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_middlebottom"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_1_temperature_middlebottom"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_1_temperature_middlebottom"] = "Fehler"
         else:
             self.data["bufferstorage_1_temperature_middlebottom"] = temperature_raw/10
@@ -953,11 +953,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_bottom"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_1_temperature_bottom"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_1_temperature_bottom"] = "Fehler"
         else:
             self.data["bufferstorage_1_temperature_bottom"] = temperature_raw/10
@@ -974,18 +974,18 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_top"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_2_temperature_top"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_2_temperature_top"] = "Fehler"
         else:
             self.data["bufferstorage_2_temperature_top"] = temperature_raw/10
         
         return True
 
-    def read_modbus_data_bufferstorage2_temperature_middletop(self, start_address=103):
+    def read_modbus_data_bufferstorage2_temperature_middletop(self, start_address=106):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
         if data_package.isError():
@@ -995,11 +995,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_middletop"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_2_temperature_middletop"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_2_temperature_middletop"] = "Fehler"
         else:
             self.data["bufferstorage_2_temperature_middletop"] = temperature_raw/10
@@ -1016,11 +1016,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_middlebottom"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_2_temperature_middlebottom"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_2_temperature_middlebottom"] = "Fehler"
         else:
             self.data["bufferstorage_2_temperature_middlebottom"] = temperature_raw/10
@@ -1037,11 +1037,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_bottom"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_2_temperature_bottom"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_2_temperature_bottom"] = "Fehler"
         else:
             self.data["bufferstorage_2_temperature_bottom"] = temperature_raw/10
@@ -1058,21 +1058,21 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Normierung"
-        elif (status == 3):
+        elif status == 3:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Öffen - Langsam"
-        elif (status == 4):
+        elif status == 4:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Öffnen - Schnell"
-        elif (status == 5):
+        elif status == 5:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Schließen - Langsam"
-        elif (status == 6):
+        elif status == 6:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Schließen - Schnell"
-        elif (status == 7):
+        elif status == 7:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Fehler"
         else:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = None
@@ -1101,7 +1101,7 @@ class HomeHeatControl:
 
         position = decoder.decode_16bit_uint()
 
-        if (position > 100):
+        if position > 100:
             self.data["bufferstorage_charge_or_switch_mixerposition"] = None
         else:
             self.data["bufferstorage_charge_or_switch_mixerposition"] = position
@@ -1118,13 +1118,13 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["bufferstorage_chargepumpstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["bufferstorage_chargepumpstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["bufferstorage_chargepumpstatus"] = "An"
-        elif (status == 3):
+        elif status == 3:
             self.data["bufferstorage_chargepumpstatus"] = "Fehler"
         else:
             self.data["bufferstorage_chargepumpstatus"] = None
@@ -1141,11 +1141,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["bufferstorage_chargewatertemperature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["bufferstorage_chargewatertemperature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["bufferstorage_chargewatertemperature"] = "Fehler"
         else:
             self.data["bufferstorage_chargewatertemperature"] = temperature_raw/10
@@ -1162,7 +1162,10 @@ class HomeHeatControl:
 
         filllevel = decoder.decode_16bit_uint()
 
-        self.data["bufferstorage_1_filllevel"] = filllevel
+        if filllevel == 0xFFFF:
+            self.data["bufferstorage_1_filllevel"] = "Ungültig"
+        else:
+            self.data["bufferstorage_1_filllevel"] = filllevel
         
         return True
 
@@ -1176,7 +1179,12 @@ class HomeHeatControl:
 
         filllevel = decoder.decode_16bit_uint()
 
-        self.data["bufferstorage_2_filllevel"] = filllevel
+        if filllevel == 0xFFFE:
+            self.data["bufferstorage_2_filllevel"] = "Nicht verbaut"
+        elif filllevel == 0xFFFF:
+            self.data["bufferstorage_2_filllevel"] = "Ungültig"
+        else:
+            self.data["bufferstorage_2_filllevel"] = filllevel
         
         return True
 
@@ -1190,7 +1198,10 @@ class HomeHeatControl:
 
         filllevel = decoder.decode_16bit_uint()
 
-        self.data["bufferstorage_combined_filllevel"] = filllevel
+        if filllevel == 0xFFFF:
+            self.data["bufferstorage_combined_filllevel"] = "Ungültig"
+        else:
+            self.data["bufferstorage_combined_filllevel"] = filllevel
         
         return True
 
@@ -1204,13 +1215,13 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["bufferstorage_active_status"] = "Nicht verfügbar"
-        elif (status == 1):
+        elif status == 1:
             self.data["bufferstorage_active_status"] = "Pufferspeicher 1"
-        elif (status == 2):
+        elif status == 2:
             self.data["bufferstorage_active_status"] = "Pufferspeicher 2"
-        elif (status == 3):
+        elif status == 3:
             self.data["bufferstorage_active_status"] = "Beide parallel"
         else:
             self.data["bufferstorage_active_status"] = None
@@ -1227,19 +1238,19 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["warmwater_boiler_status"] = "Nicht verfügbar"
-        elif (status == 1):
+        elif status == 1:
             self.data["warmwater_boiler_status"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["warmwater_boiler_status"] = "manuelles laden"
-        elif (status == 3):
+        elif status == 3:
             self.data["warmwater_boiler_status"] = "automatisches laden"
-        elif (status == 4):
+        elif status == 4:
             self.data["warmwater_boiler_status"] = "laden wird beendet"
-        elif (status == 5):
+        elif status == 5:
             self.data["warmwater_boiler_status"] = "Fehler: Ladevorgang Zeitüberschreitung"
-        elif (status == 6):
+        elif status == 6:
             self.data["warmwater_boiler_status"] = "Fehler"
         else:
             self.data["warmwater_boiler_status"] = None
@@ -1256,11 +1267,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["warmwater_boiler_temerature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["warmwater_boiler_temerature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["warmwater_boiler_temerature"] = "Fehler"
         else:
             self.data["warmwater_boiler_temerature"] = temperature_raw/10
@@ -1277,13 +1288,13 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["warmwater_boiler_chargepumpstatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["warmwater_boiler_chargepumpstatus"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["warmwater_boiler_chargepumpstatus"] = "An"
-        elif (status == 3):
+        elif status == 3:
             self.data["warmwater_boiler_chargepumpstatus"] = "Fehler"
         else:
             self.data["warmwater_boiler_chargepumpstatus"] = None
@@ -1300,19 +1311,19 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["warmwater_boiler_valvestatus"] = "Nicht verbaut"
-        elif (status == 1):
+        elif status == 1:
             self.data["warmwater_boiler_valvestatus"] = "Entnormiert"
-        elif (status == 2):
+        elif status == 2:
             self.data["warmwater_boiler_valvestatus"] = "Offen"
-        elif (status == 3):
+        elif status == 3:
             self.data["warmwater_boiler_valvestatus"] = "Öffnen"
-        elif (status == 4):
+        elif status == 4:
             self.data["warmwater_boiler_valvestatus"] = "Geschlossen"
-        elif (status == 5):
+        elif status == 5:
             self.data["warmwater_boiler_valvestatus"] = "Schließen"
-        elif (status == 6):
+        elif status == 6:
             self.data["warmwater_boiler_valvestatus"] = "Fehler"
         else:
             self.data["warmwater_boiler_valvestatus"] = None
@@ -1341,23 +1352,23 @@ class HomeHeatControl:
 
         status = decoder.decode_16bit_uint()
 
-        if (status == 0):
+        if status == 0:
             self.data["woodburner_status"] = "Nicht verfügbar"
-        elif (status == 1):
+        elif status == 1:
             self.data["woodburner_status"] = "Aus"
-        elif (status == 2):
+        elif status == 2:
             self.data["woodburner_status"] = "Pumpe aktiv"
-        elif (status == 3):
+        elif status == 3:
             self.data["woodburner_status"] = "Brand Startphase"
-        elif (status == 4):
+        elif status == 4:
             self.data["woodburner_status"] = "Brand Startphase fehlgeschlagen"
-        elif (status == 5):
+        elif status == 5:
             self.data["woodburner_status"] = "Brennt"
-        elif (status == 6):
+        elif status == 6:
             self.data["woodburner_status"] = "Brennvorgang beendet"
-        elif (status == 7):
+        elif status == 7:
             self.data["woodburner_status"] = "Fehler - Stromversorgung unterbrochen"
-        elif (status == 8):
+        elif status == 8:
             self.data["woodburner_status"] = "Fehler"
         else:
             self.data["woodburner_status"] = None
@@ -1374,11 +1385,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["woodburner_exhaust_temerature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["woodburner_exhaust_temerature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["woodburner_exhaust_temerature"] = "Fehler"
         else:
             self.data["woodburner_exhaust_temerature"] = temperature_raw/10
@@ -1395,11 +1406,11 @@ class HomeHeatControl:
 
         temperature_raw = decoder.decode_16bit_int()
 
-        if (temperature_raw == 0x7FFD):
+        if temperature_raw == 0x7FFD:
             self.data["woodburner_water_temerature"] = "Nicht verbaut"
-        elif (temperature_raw == 0x7FFE):
+        elif temperature_raw == 0x7FFE:
             self.data["woodburner_water_temerature"] = "Init"
-        elif (temperature_raw == 0x7FFF):
+        elif temperature_raw == 0x7FFF:
             self.data["woodburner_water_temerature"] = "Fehler"
         else:
             self.data["woodburner_water_temerature"] = temperature_raw/10
