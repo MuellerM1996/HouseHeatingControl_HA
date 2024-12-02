@@ -1165,7 +1165,7 @@ class HomeHeatControl:
         if filllevel == 0xFFFF:
             self.data["bufferstorage_1_filllevel"] = "Ungültig"
         else:
-            self.data["bufferstorage_1_filllevel"] = filllevel
+            self.data["bufferstorage_1_filllevel"] = filllevel/10
         
         return True
 
@@ -1184,7 +1184,7 @@ class HomeHeatControl:
         elif filllevel == 0xFFFF:
             self.data["bufferstorage_2_filllevel"] = "Ungültig"
         else:
-            self.data["bufferstorage_2_filllevel"] = filllevel
+            self.data["bufferstorage_2_filllevel"] = filllevel/10
         
         return True
 
@@ -1201,7 +1201,7 @@ class HomeHeatControl:
         if filllevel == 0xFFFF:
             self.data["bufferstorage_combined_filllevel"] = "Ungültig"
         else:
-            self.data["bufferstorage_combined_filllevel"] = filllevel
+            self.data["bufferstorage_combined_filllevel"] = filllevel/10
         
         return True
 
