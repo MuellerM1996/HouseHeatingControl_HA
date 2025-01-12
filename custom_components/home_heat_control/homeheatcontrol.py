@@ -184,14 +184,29 @@ class HomeHeatControl:
             self.read_modbus_data_bufferstorage2_filllevel(),
             self.read_modbus_data_bufferstorage_combined_filllevel(),
             self.read_modbus_data_bufferstorage_activestatus(),
+            self.read_modbus_data_bufferstorage_chargevalvestatus(),
+            self.read_modbus_data_bufferstorage_chargestatus(),
+            self.read_modbus_data_bufferstorage_chargeelectriconly(),
             self.read_modbus_data_warmwater_boiler_status(),
             self.read_modbus_data_warmwater_boiler_watertemperature(),
             self.read_modbus_data_warmwater_boiler_chargepumpstatus(),
             self.read_modbus_data_warmwater_boiler_valvestatus(),
+            self.read_modbus_data_warmwater_boiler_manualchargeactive(),
             self.read_modbus_data_warmwater_bath_heatingactive(),
+            self.read_modbus_data_warmwater_circulation_supplyoutputtemperature(),
+            self.read_modbus_data_warmwater_circulation_pumpstatus(),
+            self.read_modbus_data_warmwater_circulation_circuit1_status(),
+            self.read_modbus_data_warmwater_circulation_circuit1_temperature(),
+            self.read_modbus_data_warmwater_circulation_circuit1_valvestatus(),
+            self.read_modbus_data_warmwater_circulation_circuit2_status(),
+            self.read_modbus_data_warmwater_circulation_circuit2_temperature(),
+            self.read_modbus_data_warmwater_circulation_circuit2_valvestatus(),
             self.read_modbus_data_woodburner_status(),
             self.read_modbus_data_woodburner_exhausttemperature(),
-            self.read_modbus_data_woodburner_watertemperature()
+            self.read_modbus_data_woodburner_watertemperature(),
+            self.read_modbus_data_gasburner_status(),
+            self.read_modbus_data_gasburner_exhausttemperature(),
+            self.read_modbus_data_gasburner_watertemperature()
         )
 
     def read_modbus_data_sw_Version(self, start_address=0):
@@ -1228,6 +1243,82 @@ class HomeHeatControl:
         
         return True
 
+    def read_modbus_data_bufferstorage_chargevalvestatus(self, start_address=118):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["bufferstorage_chargevalvestatus"] = "Nicht verbaut"
+        elif status == 1:
+            self.data["bufferstorage_chargevalvestatus"] = "Entnormiert"
+        elif status == 2:
+            self.data["bufferstorage_chargevalvestatus"] = "Offen"
+        elif status == 3:
+            self.data["bufferstorage_chargevalvestatus"] = "Öffnen"
+        elif status == 4:
+            self.data["bufferstorage_chargevalvestatus"] = "Geschlossen"
+        elif status == 5:
+            self.data["bufferstorage_chargevalvestatus"] = "Schließen"
+        elif status == 6:
+            self.data["bufferstorage_chargevalvestatus"] = "Fehler"
+        else:
+            self.data["bufferstorage_chargevalvestatus"] = None
+        
+        return True
+
+    def read_modbus_data_bufferstorage_chargestatus(self, start_address=119):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["bufferstorage_chargestatus"] = "Nicht verfügbar"
+        elif status == 1:
+            self.data["bufferstorage_chargestatus"] = "Nicht aktiv"
+        elif status == 2:
+            self.data["bufferstorage_chargestatus"] = "Aktiv"
+        elif status == 3:
+            self.data["bufferstorage_chargestatus"] = "Überladen aktiv"
+        elif status == 4:
+            self.data["bufferstorage_chargestatus"] = "Vollständig überladen"
+        elif status == 5:
+            self.data["bufferstorage_chargestatus"] = "Angefordert"
+        elif status == 6:
+            self.data["bufferstorage_chargestatus"] = "Nachlauf"
+        elif status == 7:
+            self.data["bufferstorage_chargestatus"] = "Fehler Temperatursensor"
+        elif status == 8:
+            self.data["bufferstorage_chargestatus"] = "Fehler Extern"
+        elif status == 9:
+            self.data["bufferstorage_chargestatus"] = "Fehler Kodierung"
+        else:
+            self.data["bufferstorage_chargestatus"] = None
+        
+        return True
+    
+    def read_modbus_data_bufferstorage_chargeelectriconly(self, start_address=120):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1) 
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
+        
+        self.data["bufferstorage_chargeElectricOnly"] = decoder.decode_16bit_uint() != 0
+        
+        return True
+
     def read_modbus_data_warmwater_boiler_status(self, start_address=140):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
@@ -1330,7 +1421,19 @@ class HomeHeatControl:
         
         return True
     
-    def read_modbus_data_warmwater_bath_heatingactive(self, start_address=144):
+    def read_modbus_data_warmwater_boiler_manualchargeactive(self, start_address=144):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1) 
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
+        
+        self.data["warmwater_boiler_manualChargeActive"] = decoder.decode_16bit_uint() != 0
+        
+        return True
+    
+    def read_modbus_data_warmwater_bath_heatingactive(self, start_address=147):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1) 
         if data_package.isError():
@@ -1342,7 +1445,213 @@ class HomeHeatControl:
         
         return True
 
-    def read_modbus_data_woodburner_status(self, start_address=160):
+    def read_modbus_data_warmwater_circulation_supplyoutputtemperature(self, start_address=150):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if temperature_raw == 0x7FFD:
+            self.data["warmwater_circulation_outputtemerature"] = "Nicht verbaut"
+        elif temperature_raw == 0x7FFE:
+            self.data["warmwater_circulation_outputtemerature"] = "Init"
+        elif temperature_raw == 0x7FFF:
+            self.data["warmwater_circulation_outputtemerature"] = "Fehler"
+        else:
+            self.data["warmwater_circulation_outputtemerature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_warmwater_circulation_pumpstatus(self, start_address=151):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["warmwater_circulation_pumpstatus"] = "Nicht verbaut"
+        elif status == 1:
+            self.data["warmwater_circulation_pumpstatus"] = "Aus"
+        elif status == 2:
+            self.data["warmwater_circulation_pumpstatus"] = "An"
+        elif status == 3:
+            self.data["warmwater_circulation_pumpstatus"] = "Fehler"
+        else:
+            self.data["warmwater_circulation_pumpstatus"] = None
+        
+        return True
+
+    def read_modbus_data_warmwater_circulation_circuit1_status(self, start_address=152):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["warmwater_circulation_circuit1_status"] = "Nicht verbaut"
+        elif status == 1:
+            self.data["warmwater_circulation_circuit1_status"] = "Aus"
+        elif status == 2:
+            self.data["warmwater_circulation_circuit1_status"] = "An"
+        elif status == 3:
+            self.data["warmwater_circulation_circuit1_status"] = "Fehler Kodierung"
+        elif status == 4:
+            self.data["warmwater_circulation_circuit1_status"] = "Fehler Temperatursensor"
+        elif status == 5:
+            self.data["warmwater_circulation_circuit1_status"] = "Fehler Pumpe oder Ventil"
+        elif status == 6:
+            self.data["warmwater_circulation_circuit1_status"] = "Fehler Extern"
+        elif status == 7:
+            self.data["warmwater_circulation_circuit1_status"] = "Fehler Pufferspeicher unter Mindesttemperatur"
+        else:
+            self.data["warmwater_circulation_circuit1_status"] = None
+        
+        return True
+    
+    def read_modbus_data_warmwater_circulation_circuit1_temperature(self, start_address=153):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if temperature_raw == 0x7FFD:
+            self.data["warmwater_circulation_circuit1_temperature"] = "Nicht verbaut"
+        elif temperature_raw == 0x7FFE:
+            self.data["warmwater_circulation_circuit1_temperature"] = "Init"
+        elif temperature_raw == 0x7FFF:
+            self.data["warmwater_circulation_circuit1_temperature"] = "Fehler"
+        else:
+            self.data["warmwater_circulation_circuit1_temperature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_warmwater_circulation_circuit1_valvestatus(self, start_address=154):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Nicht verbaut"
+        elif status == 1:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Entnormiert"
+        elif status == 2:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Offen"
+        elif status == 3:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Öffnen"
+        elif status == 4:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Geschlossen"
+        elif status == 5:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Schließen"
+        elif status == 6:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = "Fehler"
+        else:
+            self.data["warmwater_circulation_circuit1_valvestatus"] = None
+        
+        return True
+
+    def read_modbus_data_warmwater_circulation_circuit2_status(self, start_address=156):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["warmwater_circulation_circuit2_status"] = "Nicht verbaut"
+        elif status == 1:
+            self.data["warmwater_circulation_circuit2_status"] = "Aus"
+        elif status == 2:
+            self.data["warmwater_circulation_circuit2_status"] = "An"
+        elif status == 3:
+            self.data["warmwater_circulation_circuit2_status"] = "Fehler Kodierung"
+        elif status == 4:
+            self.data["warmwater_circulation_circuit2_status"] = "Fehler Temperatursensor"
+        elif status == 5:
+            self.data["warmwater_circulation_circuit2_status"] = "Fehler Pumpe oder Ventil"
+        elif status == 6:
+            self.data["warmwater_circulation_circuit2_status"] = "Fehler Extern"
+        elif status == 7:
+            self.data["warmwater_circulation_circuit2_status"] = "Fehler Pufferspeicher unter Mindesttemperatur"
+        else:
+            self.data["warmwater_circulation_circuit2_status"] = None
+        
+        return True
+    
+    def read_modbus_data_warmwater_circulation_circuit2_temperature(self, start_address=157):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if temperature_raw == 0x7FFD:
+            self.data["warmwater_circulation_circuit2_temperature"] = "Nicht verbaut"
+        elif temperature_raw == 0x7FFE:
+            self.data["warmwater_circulation_circuit2_temperature"] = "Init"
+        elif temperature_raw == 0x7FFF:
+            self.data["warmwater_circulation_circuit2_temperature"] = "Fehler"
+        else:
+            self.data["warmwater_circulation_circuit2_temperature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_warmwater_circulation_circuit2_valvestatus(self, start_address=158):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Nicht verbaut"
+        elif status == 1:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Entnormiert"
+        elif status == 2:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Offen"
+        elif status == 3:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Öffnen"
+        elif status == 4:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Geschlossen"
+        elif status == 5:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Schließen"
+        elif status == 6:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = "Fehler"
+        else:
+            self.data["warmwater_circulation_circuit2_valvestatus"] = None
+        
+        return True
+
+    def read_modbus_data_woodburner_status(self, start_address=170):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
         if data_package.isError():
@@ -1375,7 +1684,7 @@ class HomeHeatControl:
         
         return True
 
-    def read_modbus_data_woodburner_exhausttemperature(self, start_address=161):
+    def read_modbus_data_woodburner_exhausttemperature(self, start_address=171):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
         if data_package.isError():
@@ -1396,7 +1705,7 @@ class HomeHeatControl:
         
         return True
 
-    def read_modbus_data_woodburner_watertemperature(self, start_address=162):
+    def read_modbus_data_woodburner_watertemperature(self, start_address=172):
         """start reading data"""
         data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
         if data_package.isError():
@@ -1414,5 +1723,80 @@ class HomeHeatControl:
             self.data["woodburner_water_temerature"] = "Fehler"
         else:
             self.data["woodburner_water_temerature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_gasburner_status(self, start_address=180):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        status = decoder.decode_16bit_uint()
+
+        if status == 0:
+            self.data["gasburner_status"] = "Nicht verfügbar"
+        elif status == 1:
+            self.data["gasburner_status"] = "Aus"
+        elif status == 2:
+            self.data["gasburner_status"] = "Pumpe aktiv"
+        elif status == 3:
+            self.data["gasburner_status"] = "Brand Startphase"
+        elif status == 4:
+            self.data["gasburner_status"] = "Brand Startphase fehlgeschlagen"
+        elif status == 5:
+            self.data["gasburner_status"] = "Brennt"
+        elif status == 6:
+            self.data["gasburner_status"] = "Brennvorgang beendet"
+        elif status == 7:
+            self.data["gasburner_status"] = "Fehler - Stromversorgung unterbrochen"
+        elif status == 8:
+            self.data["gasburner_status"] = "Fehler"
+        else:
+            self.data["gasburner_status"] = None
+        
+        return True
+
+    def read_modbus_data_gasburner_exhausttemperature(self, start_address=181):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if temperature_raw == 0x7FFD:
+            self.data["gasburner_exhaust_temerature"] = "Nicht verbaut"
+        elif temperature_raw == 0x7FFE:
+            self.data["gasburner_exhaust_temerature"] = "Init"
+        elif temperature_raw == 0x7FFF:
+            self.data["gasburner_exhaust_temerature"] = "Fehler"
+        else:
+            self.data["gasburner_exhaust_temerature"] = temperature_raw/10
+        
+        return True
+
+    def read_modbus_data_gasburner_watertemperature(self, start_address=182):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=1)      
+        if data_package.isError():
+            _LOGGER.debug(f'data Error at start address {start_address}')
+            return False
+        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+
+        temperature_raw = decoder.decode_16bit_int()
+
+        if temperature_raw == 0x7FFD:
+            self.data["gasburner_water_temerature"] = "Nicht verbaut"
+        elif temperature_raw == 0x7FFE:
+            self.data["gasburner_water_temerature"] = "Init"
+        elif temperature_raw == 0x7FFF:
+            self.data["gasburner_water_temerature"] = "Fehler"
+        else:
+            self.data["gasburner_water_temerature"] = temperature_raw/10
         
         return True
