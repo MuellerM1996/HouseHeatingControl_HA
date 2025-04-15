@@ -5,8 +5,6 @@ from .const import (
     DOMAIN,
     ATTR_MANUFACTURER,
 )
-from datetime import datetime
-from homeassistant.helpers.entity import Entity
 from homeassistant.const import (
     CONF_NAME,
     STATE_ON,
@@ -14,14 +12,11 @@ from homeassistant.const import (
     STATE_UNKNOWN
 )
 from homeassistant.components.binary_sensor import (
-    PLATFORM_SCHEMA,
     BinarySensorEntity,
-    BinarySensorDeviceClass,
     BinarySensorEntityDescription
 )
 
 from homeassistant.core import callback
-from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,12 +33,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     entities = []
     for sensor_info in HHCSENSOR_TYPES:
-        if (sensor_info[0] == 1):
+        sensorType = str(type(sensor_info[0])).split(".")[-1].split("'")[0]
+        sensorTypeCompare = str(BinarySensorEntityDescription).split(".")[-1].split("'")[0]
+        if (sensorType == sensorTypeCompare):
             sensor = HHCBinarySensor(
                 conf_name,
                 hub,
                 device_info,
-                sensor_info[1],
+                sensor_info[0],
             )
             entities.append(sensor)
 

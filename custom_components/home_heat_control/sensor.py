@@ -5,8 +5,6 @@ from .const import (
     DOMAIN,
     ATTR_MANUFACTURER,
 )
-from datetime import datetime
-from homeassistant.helpers.entity import Entity
 from homeassistant.const import (
     CONF_NAME, 
     UnitOfEnergy, 
@@ -37,12 +35,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     entities = []
     for sensor_info in HHCSENSOR_TYPES:
-        if (sensor_info[0] == 0):
+        sensorType = str(type(sensor_info[0])).split(".")[-1].split("'")[0]
+        sensorTypeCompare = str(SensorEntityDescription).split(".")[-1].split("'")[0]
+        if (sensorType == sensorTypeCompare):
             sensor = HHCSensor(
                 conf_name,
                 hub,
                 device_info,
-                sensor_info[1],
+                sensor_info[0],
             )
             entities.append(sensor)
 
