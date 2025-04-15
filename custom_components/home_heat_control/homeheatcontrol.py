@@ -5,7 +5,6 @@ from datetime import timedelta
 
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_time_interval
@@ -211,18 +210,18 @@ class HomeHeatControl:
 
     def read_modbus_data_sw_Version(self, start_address=0):
         """start reading data"""
-        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=3)      
+        data_package = self.read_holding_registers(unit=self._address, address=start_address, count=4)      
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
+        value = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT64)
         
-        fbl_sw_version_major = decoder.decode_8bit_uint()
-        fbl_sw_version_minor = decoder.decode_8bit_uint()
-        fbl_sw_version_patch = decoder.decode_8bit_uint()
-        appl_sw_version_major = decoder.decode_8bit_uint()
-        appl_sw_version_minor = decoder.decode_8bit_uint()
-        appl_sw_version_patch = decoder.decode_8bit_uint()
+        fbl_sw_version_major = value >> 56
+        fbl_sw_version_minor = (value >> 48) & 0xFF
+        fbl_sw_version_patch = (value >> 40) & 0xFF
+        appl_sw_version_major = (value >> 32) & 0xFF
+        appl_sw_version_minor = (value >> 24) & 0xFF
+        appl_sw_version_patch = (value >> 16) & 0xFF
 
         self.data["fbl_sw_version"] = f"{fbl_sw_version_major}.{fbl_sw_version_minor}.{fbl_sw_version_patch}"
         self.data["appl_sw_version"] = f"{appl_sw_version_major}.{appl_sw_version_minor}.{appl_sw_version_patch}"
@@ -235,9 +234,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["dtcactive"] = decoder.decode_16bit_uint() != 0
+        self.data["dtcactive"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -247,9 +245,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["outsidetemperature"] = "Nicht verbaut"
@@ -268,9 +265,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["room1temperature"] = "Nicht verbaut"
@@ -289,9 +285,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["room2temperature"] = "Nicht verbaut"
@@ -310,9 +305,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        doorbellstatus = decoder.decode_16bit_uint()
+        doorbellstatus = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if doorbellstatus == 0:
             self.data["doorbell_status"] = "Nicht verbaut"
@@ -333,9 +327,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["heatcontrolmanagement_enabled"] = decoder.decode_16bit_uint() != 0
+        self.data["heatcontrolmanagement_enabled"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
     
@@ -345,9 +338,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["heatcontrolmanagement_lowTemperatureWarning"] = decoder.decode_16bit_uint() != 0
+        self.data["heatcontrolmanagement_lowTemperatureWarning"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -357,9 +349,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_1_status"] = "Nicht verbaut"
@@ -388,9 +379,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_1_pumpstatus"] = "Nicht verbaut"
@@ -411,9 +401,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_1_mixerstatus"] = "Nicht verbaut"
@@ -442,9 +431,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["heatcircuit_1_mixernormed"] = decoder.decode_16bit_uint() != 0
+        self.data["heatcircuit_1_mixernormed"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -454,9 +442,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        position = decoder.decode_16bit_uint()
+        position = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if position > 100:
             self.data["heatcircuit_1_mixerposition"] = None
@@ -471,9 +458,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature = decoder.decode_16bit_uint()
+        temperature = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if temperature > 100:
             self.data["heatcircuit_1_targetForerunTemperature"] = None
@@ -488,9 +474,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["heatcircuit_1_forerunTemperature"] = "Nicht verbaut"
@@ -509,9 +494,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["heatcircuit_1_returnflowTemperature"] = "Nicht verbaut"
@@ -530,9 +514,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_2_status"] = "Nicht verbaut"
@@ -561,9 +544,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_2_pumpstatus"] = "Nicht verbaut"
@@ -584,9 +566,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_2_mixerstatus"] = "Nicht verbaut"
@@ -615,9 +596,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["heatcircuit_2_mixernormed"] = decoder.decode_16bit_uint() != 0
+        self.data["heatcircuit_2_mixernormed"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -627,9 +607,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        position = decoder.decode_16bit_uint()
+        position = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if position > 100:
             self.data["heatcircuit_2_mixerposition"] = None
@@ -644,9 +623,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature = decoder.decode_16bit_uint()
+        temperature = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if temperature > 100:
             self.data["heatcircuit_2_targetForerunTemperature"] = None
@@ -661,9 +639,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["heatcircuit_2_forerunTemperature"] = "Nicht verbaut"
@@ -682,9 +659,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["heatcircuit_2_returnflowTemperature"] = "Nicht verbaut"
@@ -703,9 +679,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_3_status"] = "Nicht verbaut"
@@ -734,9 +709,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_3_pumpstatus"] = "Nicht verbaut"
@@ -757,9 +731,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["heatcircuit_3_mixerstatus"] = "Nicht verbaut"
@@ -788,9 +761,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["heatcircuit_3_mixernormed"] = decoder.decode_16bit_uint() != 0
+        self.data["heatcircuit_3_mixernormed"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -800,9 +772,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        position = decoder.decode_16bit_uint()
+        position = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if position > 100:
             self.data["heatcircuit_3_mixerposition"] = None
@@ -817,9 +788,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature = decoder.decode_16bit_uint()
+        temperature = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if temperature > 100:
             self.data["heatcircuit_3_targetForerunTemperature"] = None
@@ -834,9 +804,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["heatcircuit_3_forerunTemperature"] = "Nicht verbaut"
@@ -855,9 +824,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["heatcircuit_3_returnflowTemperature"] = "Nicht verbaut"
@@ -876,9 +844,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["bufferstorage_status"] = "Nicht verbaut"
@@ -901,9 +868,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_top"] = "Nicht verbaut"
@@ -922,9 +888,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_middletop"] = "Nicht verbaut"
@@ -943,9 +908,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_middlebottom"] = "Nicht verbaut"
@@ -964,9 +928,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_1_temperature_bottom"] = "Nicht verbaut"
@@ -985,9 +948,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_top"] = "Nicht verbaut"
@@ -1006,9 +968,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_middletop"] = "Nicht verbaut"
@@ -1027,9 +988,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_middlebottom"] = "Nicht verbaut"
@@ -1048,9 +1008,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_2_temperature_bottom"] = "Nicht verbaut"
@@ -1069,9 +1028,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["bufferstorage_charge_or_switch_mixerstatus"] = "Nicht verbaut"
@@ -1100,9 +1058,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["bufferstorage_charge_or_switch_mixernormed"] = decoder.decode_16bit_uint() != 0
+        self.data["bufferstorage_charge_or_switch_mixernormed"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -1112,9 +1069,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        position = decoder.decode_16bit_uint()
+        position = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if position > 100:
             self.data["bufferstorage_charge_or_switch_mixerposition"] = None
@@ -1129,9 +1085,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["bufferstorage_chargepumpstatus"] = "Nicht verbaut"
@@ -1152,9 +1107,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["bufferstorage_chargewatertemperature"] = "Nicht verbaut"
@@ -1173,9 +1127,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        filllevel = decoder.decode_16bit_uint()
+        filllevel = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if filllevel == 0xFFFF:
             self.data["bufferstorage_1_filllevel"] = "Ungültig"
@@ -1190,9 +1143,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        filllevel = decoder.decode_16bit_uint()
+        filllevel = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if filllevel == 0xFFFE:
             self.data["bufferstorage_2_filllevel"] = "Nicht verbaut"
@@ -1209,9 +1161,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        filllevel = decoder.decode_16bit_uint()
+        filllevel = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if filllevel == 0xFFFF:
             self.data["bufferstorage_combined_filllevel"] = "Ungültig"
@@ -1226,9 +1177,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["bufferstorage_active_status"] = "Nicht verfügbar"
@@ -1249,9 +1199,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["bufferstorage_chargevalvestatus"] = "Nicht verbaut"
@@ -1278,9 +1227,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["bufferstorage_chargestatus"] = "Nicht verfügbar"
@@ -1313,9 +1261,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["bufferstorage_chargeElectricOnly"] = decoder.decode_16bit_uint() != 0
+        self.data["bufferstorage_chargeElectricOnly"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -1325,9 +1272,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_boiler_status"] = "Nicht verfügbar"
@@ -1354,9 +1300,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["warmwater_boiler_temerature"] = "Nicht verbaut"
@@ -1375,9 +1320,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_boiler_chargepumpstatus"] = "Nicht verbaut"
@@ -1398,9 +1342,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_boiler_valvestatus"] = "Nicht verbaut"
@@ -1427,9 +1370,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["warmwater_boiler_manualChargeActive"] = decoder.decode_16bit_uint() != 0
+        self.data["warmwater_boiler_manualChargeActive"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
     
@@ -1439,9 +1381,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)  
         
-        self.data["warmwater_bath_heatingactive"] = decoder.decode_16bit_uint() != 0
+        self.data["warmwater_bath_heatingactive"] = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
         
         return True
 
@@ -1451,9 +1392,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["warmwater_circulation_outputtemerature"] = "Nicht verbaut"
@@ -1472,9 +1412,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_circulation_pumpstatus"] = "Nicht verbaut"
@@ -1495,9 +1434,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_circulation_circuit1_status"] = "Nicht verbaut"
@@ -1526,9 +1464,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["warmwater_circulation_circuit1_temperature"] = "Nicht verbaut"
@@ -1547,9 +1484,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_circulation_circuit1_valvestatus"] = "Nicht verbaut"
@@ -1576,9 +1512,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_circulation_circuit2_status"] = "Nicht verbaut"
@@ -1607,9 +1542,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["warmwater_circulation_circuit2_temperature"] = "Nicht verbaut"
@@ -1628,9 +1562,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["warmwater_circulation_circuit2_valvestatus"] = "Nicht verbaut"
@@ -1657,9 +1590,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["woodburner_status"] = "Nicht verfügbar"
@@ -1690,9 +1622,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["woodburner_exhaust_temerature"] = "Nicht verbaut"
@@ -1711,9 +1642,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["woodburner_water_temerature"] = "Nicht verbaut"
@@ -1732,9 +1662,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        status = decoder.decode_16bit_uint()
+        status = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
 
         if status == 0:
             self.data["gasburner_status"] = "Nicht verfügbar"
@@ -1765,9 +1694,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["gasburner_exhaust_temerature"] = "Nicht verbaut"
@@ -1786,9 +1714,8 @@ class HomeHeatControl:
         if data_package.isError():
             _LOGGER.debug(f'data Error at start address {start_address}')
             return False
-        decoder = BinaryPayloadDecoder.fromRegisters(data_package.registers, byteorder=Endian.BIG)
 
-        temperature_raw = decoder.decode_16bit_int()
+        temperature_raw = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         if temperature_raw == 0x7FFD:
             self.data["gasburner_water_temerature"] = "Nicht verbaut"
