@@ -116,7 +116,7 @@ class HHCSwitch(SwitchEntity):
             _LOGGER.error(f"Could not write: Value:{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
             return
         
-        self._hub.data[self.entity_description.key] = True
+        self._data = True
         self.async_write_ha_state()
 
     async def async_turn_off(self) -> None:
@@ -133,5 +133,5 @@ class HHCSwitch(SwitchEntity):
             _LOGGER.error(f"Could not write: Value:{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
             return
         
-        self._hub.data[self.entity_description.key] = False
+        self._data = False
         self.async_write_ha_state()
