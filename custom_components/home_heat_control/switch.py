@@ -37,7 +37,7 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
 
     entities = []
     for sensor_info in HHCSENSOR_TYPES:
-        sensorType = str(type(sensor_info[0])).split(".")[-1].split("'")[0]
+        sensorType = str(type(sensor_info[2])).split(".")[-1].split("'")[0]
         sensorTypeCompare = str(SwitchEntityDescription).split(".")[-1].split("'")[0]
         if (sensorType == sensorTypeCompare):
             sensor = HHCSwitch(
@@ -56,7 +56,7 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
 class HHCSwitch(SwitchEntity):
     """Representation of an HHC switch"""
 
-    def __init__(self, platform_name, hub, device_info, sensor: SwitchEntityDescription, slaveId: int, address: int) -> None:
+    def __init__(self, platform_name, hub, device_info, slaveId: int, address: int, sensor: SwitchEntityDescription) -> None:
         """Initialize the switch."""
         self.entity_description = sensor
         self._platform_name = platform_name
@@ -64,16 +64,16 @@ class HHCSwitch(SwitchEntity):
         self._device_info = device_info
         self._slaveId = slaveId
         self._address = address
+        self._data = None
         self._attr_is_on = False
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
-        self._hub.async_add_homeheatcontrol_sensor(self._modbus_data_updated)
+        self._hub.async_add_homeheatcontrol_sensor(self)
 
     async def async_will_remove_from_hass(self) -> None:
-        self._hub.async_remove_homeheatcontrol_sensor(self._modbus_data_updated)
+        self._hub.async_remove_homeheatcontrol_sensor(self)
 
-    @callback
     def _modbus_data_updated(self) -> None:
         self.async_write_ha_state()
 
@@ -93,14 +93,14 @@ class HHCSwitch(SwitchEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self.entity_description.key in self._hub.data:
-            self._attr_is_on = self._hub.data[self.entity_description.key]
-            if self._attr_is_on:
-                return STATE_ON
-            else:
-                return STATE_OFF
+        if self._data is not None:
+            self._attr_is_on = self._data
         else:
-            return STATE_UNAVAILABLE        
+            return STATE_UNAVAILABLE
+        if self._attr_is_on:
+            return STATE_ON
+        else:
+            return STATE_OFF    
     
     async def async_turn_on(self) -> None:
         """Turn the entity on."""

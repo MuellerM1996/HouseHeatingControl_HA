@@ -33,7 +33,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     entities = []
     for sensor_info in HHCSENSOR_TYPES:
-        sensorType = str(type(sensor_info[0])).split(".")[-1].split("'")[0]
+        sensorType = str(type(sensor_info[2])).split(".")[-1].split("'")[0]
         sensorTypeCompare = str(BinarySensorEntityDescription).split(".")[-1].split("'")[0]
         if (sensorType == sensorTypeCompare):
             sensor = HHCBinarySensor(
@@ -41,6 +41,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 hub,
                 device_info,
                 sensor_info[0],
+                sensor_info[1],
+                sensor_info[2],
             )
             entities.append(sensor)
 
@@ -50,28 +52,25 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class HHCBinarySensor(BinarySensorEntity):
     """Representation of an binary HHC sensor."""
 
-    def __init__(self, platform_name, hub, device_info, sensor: BinarySensorEntityDescription):
+    def __init__(self, platform_name, hub, device_info, slaveId: int, address: int, sensor: BinarySensorEntityDescription):
         """Initialize the sensor."""
         self.entity_description = sensor
         self._platform_name = platform_name
         self._hub = hub
         self._device_info = device_info
+        self._slaveId = slaveId
+        self._address = address
+        self._data = None
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        self._hub.async_add_homeheatcontrol_sensor(self._modbus_data_updated)
+        self._hub.async_add_homeheatcontrol_sensor(self)
 
     async def async_will_remove_from_hass(self) -> None:
-        self._hub.async_remove_homeheatcontrol_sensor(self._modbus_data_updated)
+        self._hub.async_remove_homeheatcontrol_sensor(self)
 
-    @callback
     def _modbus_data_updated(self):
         self.async_write_ha_state()
-
-    @callback
-    def _update_state(self):
-        if self.entity_description.key in self._hub.data:
-            self._state = self._hub.data[self.entity_description.key]
 
     @property
     def should_poll(self) -> bool:
@@ -89,11 +88,11 @@ class HHCBinarySensor(BinarySensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self.entity_description.key in self._hub.data:
-            self._attr_is_on = self._hub.data[self.entity_description.key]
-            if self._attr_is_on:
-                return STATE_ON
-            else:
-                return STATE_OFF
+        if self._data is not None:
+            self._attr_is_on = self._data
         else:
             return STATE_UNKNOWN
+        if self._attr_is_on:
+            return STATE_ON
+        else:
+            return STATE_OFF
