@@ -249,8 +249,6 @@ class HomeHeatControl:
         sensor_fbl._data = f"{fbl_sw_version_major}.{fbl_sw_version_minor}.{fbl_sw_version_patch}"
         sensor_appl._data = f"{appl_sw_version_major}.{appl_sw_version_minor}.{appl_sw_version_patch}"
         
-        _LOGGER.debug(f"Received data from {sensor_fbl.entity_description.key}")
-        
         return True
     
     def read_modbus_data_bool(self, sensor):
@@ -261,8 +259,6 @@ class HomeHeatControl:
             return False
         
         sensor._data = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
 
         return True
     
@@ -282,8 +278,6 @@ class HomeHeatControl:
             sensor._data = "Fehler"
         else:
             sensor._data = temperature_raw/10
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -306,8 +300,6 @@ class HomeHeatControl:
             sensor._data = "Fehler"
         else:
             sensor._data = None
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -339,8 +331,6 @@ class HomeHeatControl:
         else:
             sensor._data = None
         
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
-        
         return True
 
     def read_modbus_data_mixerposition(self, sensor):
@@ -356,8 +346,6 @@ class HomeHeatControl:
             sensor._data = None
         else:
             sensor._data = position
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -386,8 +374,6 @@ class HomeHeatControl:
             sensor._data = "Fehler"
         else:
             sensor._data = None
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -419,8 +405,6 @@ class HomeHeatControl:
         else:
             sensor._data = None
         
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
-        
         return True
 
     def read_modbus_data_hc_targetforeruntemperature(self, sensor):
@@ -448,8 +432,6 @@ class HomeHeatControl:
         else:
             sensor._data = None
         
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
-        
         return True
 
     def read_modbus_data_bufferstorage_status(self):
@@ -475,8 +457,6 @@ class HomeHeatControl:
         else:
             sensor._data = None
         
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
-        
         return True
 
     def read_modbus_data_bufferstorage_filllevel(self, sensor):
@@ -494,8 +474,6 @@ class HomeHeatControl:
             sensor._data = "Ungültig"
         else:
             sensor._data = filllevel/10
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -519,8 +497,6 @@ class HomeHeatControl:
             sensor._data = "Beide parallel"
         else:
             sensor._data = None
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -557,8 +533,6 @@ class HomeHeatControl:
         else:
             sensor._data = None
         
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
-        
         return True
 
     def read_modbus_data_warmwater_boiler_status(self):
@@ -587,8 +561,6 @@ class HomeHeatControl:
             sensor._data = "Fehler"
         else:
             sensor._data = None
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -620,8 +592,6 @@ class HomeHeatControl:
             sensor._data = "Fehler Pufferspeicher unter Mindesttemperatur"
         else:
             sensor._data = None
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
 
@@ -656,8 +626,6 @@ class HomeHeatControl:
         else:
             sensor._data = None
         
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
-        
         return True
 
     def read_modbus_data_gasburner_status(self):
@@ -690,7 +658,5 @@ class HomeHeatControl:
             sensor._data = "Fehler"
         else:
             sensor._data = None
-        
-        _LOGGER.debug(f"Received data from {sensor.entity_description.key}")
         
         return True
