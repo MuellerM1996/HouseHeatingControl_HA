@@ -82,7 +82,7 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 117, SensorEntityDescription(name="Pufferspeicher Aktiv Status" , key="bufferstorage_active_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 118, SensorEntityDescription(name="Pufferspeicher Ladeventilventilstatus" , key="bufferstorage_chargevalvestatus", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 119, SensorEntityDescription(name="Pufferspeicher Ladestatus" , key="bufferstorage_chargestatus", device_class=SensorDeviceClass.ENUM)],
-    [DEFAULT_MODBUS_ADDRESS, 120, BinarySensorEntityDescription(name="Pufferspeicher nur E-Laden", key="bufferstorage_chargeElectricOnly")],
+    [DEFAULT_MODBUS_ADDRESS, 120, SwitchEntityDescription(name="Pufferspeicher nur E-Laden", key="bufferstorage_chargeElectricOnly", device_class=SwitchDeviceClass.SWITCH)],
     #WarmWater
     [DEFAULT_MODBUS_ADDRESS, 140, SensorEntityDescription(name="Warmwasser Boiler Status" , key="warmwater_boiler_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 141, SensorEntityDescription(name="Warmwasser Boiler Temperatur", key="warmwater_boiler_temerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
