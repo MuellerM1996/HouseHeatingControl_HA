@@ -59,7 +59,9 @@ class HomeHeatControl:
         result : bool = await self._hass.async_add_executor_job(self._refresh_modbus_data)
         if result:
             for sensor in self._sensors:
-                sensor._modbus_data_updated()
+                _modbus_data_updated = getattr(sensor, "_modbus_data_updated", None)
+                if callable(_modbus_data_updated):
+                    sensor._modbus_data_updated()
 
 
     def _refresh_modbus_data(self, _now: Optional[int] = None) -> bool:
@@ -206,12 +208,11 @@ class HomeHeatControl:
             self.read_modbus_data_bufferstorage_chargestatus(),
             self.read_modbus_data_bool(self.get_sensor_by_name("bufferstorage_chargeElectricOnly")),
             self.read_modbus_data_warmwater_boiler_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_boiler_temerature")),
+            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_boiler_temperature")),
             self.read_modbus_data_pumpstatus(self.get_sensor_by_name("warmwater_boiler_chargepumpstatus")),
             self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_boiler_valvestatus")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("warmwater_boiler_manualChargeActive")),
             self.read_modbus_data_bool(self.get_sensor_by_name("warmwater_bath_heatingactive")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_outputtemerature")),
+            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_outputtemperature")),
             self.read_modbus_data_pumpstatus(self.get_sensor_by_name("warmwater_circulation_pumpstatus")),
             self.read_modbus_data_warmwater_circulation_circuit_status(self.get_sensor_by_name("warmwater_circulation_circuit1_status")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_circuit1_temperature")),
@@ -220,11 +221,11 @@ class HomeHeatControl:
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_circuit2_temperature")),
             self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_circulation_circuit2_valvestatus")),
             self.read_modbus_data_woodburner_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_exhaust_temerature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_water_temerature")),
+            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_exhaust_temperature")),
+            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_water_temperature")),
             self.read_modbus_data_gasburner_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_exhaust_temerature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_water_temerature")),
+            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_exhaust_temperature")),
+            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_water_temperature")),
         )
         _LOGGER.debug("Modbus read End")
         return result

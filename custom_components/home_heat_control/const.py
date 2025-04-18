@@ -2,6 +2,7 @@ from homeassistant.components.sensor import SensorEntityDescription, SensorState
 from homeassistant.components.sensor.const import SensorDeviceClass
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntityDescription
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntityDescription
+from homeassistant.components.button import ButtonDeviceClass, ButtonEntityDescription
 from homeassistant.const import (
     UnitOfTemperature,
     PERCENTAGE
@@ -16,7 +17,6 @@ DEFAULT_MODBUS_ADDRESS = 0
 ATTR_MANUFACTURER = "MM/HL Engineering"
 CONF_MODBUS_ADDRESS = "modbus_address"
 
-#attributes: type(0=normal | 1=binary), name, key is mandatory
 HHCSENSOR_TYPES = [
     #General
     [DEFAULT_MODBUS_ADDRESS, 0, SensorEntityDescription(name="FBL Software Version", key="fbl_sw_version")],
@@ -85,27 +85,30 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 120, SwitchEntityDescription(name="Pufferspeicher nur E-Laden", key="bufferstorage_chargeElectricOnly", device_class=SwitchDeviceClass.SWITCH)],
     #WarmWater
     [DEFAULT_MODBUS_ADDRESS, 140, SensorEntityDescription(name="Warmwasser Boiler Status" , key="warmwater_boiler_status", device_class=SensorDeviceClass.ENUM)],
-    [DEFAULT_MODBUS_ADDRESS, 141, SensorEntityDescription(name="Warmwasser Boiler Temperatur", key="warmwater_boiler_temerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 141, SensorEntityDescription(name="Warmwasser Boiler Temperatur", key="warmwater_boiler_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 142, SensorEntityDescription(name="Warmwasser Boiler Ladepumpenstatus" , key="warmwater_boiler_chargepumpstatus", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 143, SensorEntityDescription(name="Warmwasser Boiler Umschaltventilstatus" , key="warmwater_boiler_valvestatus", device_class=SensorDeviceClass.ENUM)],
-    [DEFAULT_MODBUS_ADDRESS, 144, BinarySensorEntityDescription(name="Warmwasser Boiler manuelles laden", key="warmwater_boiler_manualChargeActive")],
+    [DEFAULT_MODBUS_ADDRESS, 144, ButtonEntityDescription(name="Warmwasser Boiler manuell laden", key="warmwater_boiler_manualChargeRequest", icon="mdi:water-boiler"), 1],
+    [DEFAULT_MODBUS_ADDRESS, 144, ButtonEntityDescription(name="Warmwasser Boiler manuell laden beenden", key="warmwater_boiler_manualChargeRequestEnd", icon="mdi:water-boiler-off"), 2],
     [DEFAULT_MODBUS_ADDRESS, 147, BinarySensorEntityDescription(name="Warmwasser Bad heizen aktiv", key="warmwater_bath_heatingactive")],
-    [DEFAULT_MODBUS_ADDRESS, 150, SensorEntityDescription(name="Warmwasser Zirkulation Abgabetemperatur", key="warmwater_circulation_outputtemerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 150, SensorEntityDescription(name="Warmwasser Zirkulation Abgabetemperatur", key="warmwater_circulation_outputtemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 151, SensorEntityDescription(name="Warmwasser Zirkulation Pumpenstatus" , key="warmwater_circulation_pumpstatus", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 152, SensorEntityDescription(name="Warmwasser Zirkulation Kreis 1 Status" , key="warmwater_circulation_circuit1_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 153, SensorEntityDescription(name="Warmwasser Zirkulation Kreis 1 Temperatur", key="warmwater_circulation_circuit1_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 154, SensorEntityDescription(name="Warmwasser Zirkulation Kreis 1 Ventilstatus" , key="warmwater_circulation_circuit1_valvestatus", device_class=SensorDeviceClass.ENUM)],
-    #TODO:
+    [DEFAULT_MODBUS_ADDRESS, 155, ButtonEntityDescription(name="Warmwasser Zirkulation Kreis 1 Start", key="warmwater_circulation_circuit1_request_start", icon="mdi:water-pump"), 1],
+    [DEFAULT_MODBUS_ADDRESS, 155, ButtonEntityDescription(name="Warmwasser Zirkulation Kreis 1 Stop", key="warmwater_circulation_circuit1_request_stop", icon="mdi:water-pump-off"), 2],
     [DEFAULT_MODBUS_ADDRESS, 156, SensorEntityDescription(name="Warmwasser Zirkulation Kreis 2 Status" , key="warmwater_circulation_circuit2_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 157, SensorEntityDescription(name="Warmwasser Zirkulation Kreis 2 Temperatur", key="warmwater_circulation_circuit2_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 158, SensorEntityDescription(name="Warmwasser Zirkulation Kreis 2 Ventilstatus" , key="warmwater_circulation_circuit2_valvestatus", device_class=SensorDeviceClass.ENUM)],
-    #TODO:
+    [DEFAULT_MODBUS_ADDRESS, 159, ButtonEntityDescription(name="Warmwasser Zirkulation Kreis 2 Start", key="warmwater_circulation_circuit2_request_start", icon="mdi:water-pump"), 1],
+    [DEFAULT_MODBUS_ADDRESS, 159, ButtonEntityDescription(name="Warmwasser Zirkulation Kreis 2 Stop", key="warmwater_circulation_circuit2_request_stop", icon="mdi:water-pump-off"), 2],
     #Woodburner
     [DEFAULT_MODBUS_ADDRESS, 170, SensorEntityDescription(name="Holzofen Status" , key="woodburner_status", device_class=SensorDeviceClass.ENUM)],
-    [DEFAULT_MODBUS_ADDRESS, 171, SensorEntityDescription(name="Holzofen Abgastemperatur", key="woodburner_exhaust_temerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
-    [DEFAULT_MODBUS_ADDRESS, 172, SensorEntityDescription(name="Holzofen Wassertemperatur", key="woodburner_water_temerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 171, SensorEntityDescription(name="Holzofen Abgastemperatur", key="woodburner_exhaust_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 172, SensorEntityDescription(name="Holzofen Wassertemperatur", key="woodburner_water_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     #Gasburner
     [DEFAULT_MODBUS_ADDRESS, 180, SensorEntityDescription(name="Gasbrenner Status" , key="gasburner_status", device_class=SensorDeviceClass.ENUM)],
-    [DEFAULT_MODBUS_ADDRESS, 181, SensorEntityDescription(name="Gasbrenner Abgastemperatur", key="gasburner_exhaust_temerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
-    [DEFAULT_MODBUS_ADDRESS, 182, SensorEntityDescription(name="Gasbrenner Wassertemperatur", key="gasburner_water_temerature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 181, SensorEntityDescription(name="Gasbrenner Abgastemperatur", key="gasburner_exhaust_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 182, SensorEntityDescription(name="Gasbrenner Wassertemperatur", key="gasburner_water_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
 ]
