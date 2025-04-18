@@ -39,10 +39,10 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
                 conf_name,
                 hub,
                 device_info,
-                sensor_info[0],
-                sensor_info[1],
-                sensor_info[2],
-                sensor_info[3],
+                sensor_info[0],     #slave ID
+                sensor_info[1],     #modbus address
+                sensor_info[2],     #sensor description
+                sensor_info[3],     #pressed value
             )
             entities.append(sensor)
 

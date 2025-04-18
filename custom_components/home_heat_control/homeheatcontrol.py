@@ -170,6 +170,10 @@ class HomeHeatControl:
             self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_1_targetForerunTemperature")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_1_forerunTemperature")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_1_returnflowTemperature")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_inclination")),
+            self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_1_curve_niveau")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_targettemperature_day")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_targettemperature_night")),
             self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_2_status")),
             self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_2_pumpstatus")),
             self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_2_mixerstatus")),
@@ -178,6 +182,10 @@ class HomeHeatControl:
             self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_2_targetForerunTemperature")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_2_forerunTemperature")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_2_returnflowTemperature")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_inclination")),
+            self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_2_curve_niveau")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_targettemperature_day")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_targettemperature_night")),
             self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_3_status")),
             self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_3_pumpstatus")),
             self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_3_mixerstatus")),
@@ -186,6 +194,10 @@ class HomeHeatControl:
             self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_3_targetForerunTemperature")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_3_forerunTemperature")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_3_returnflowTemperature")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_inclination")),
+            self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_3_curve_niveau")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_targettemperature_day")),
+            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_targettemperature_night")),
             self.read_modbus_data_bufferstorage_status(),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_top")),
             self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_middletop")),
@@ -260,6 +272,28 @@ class HomeHeatControl:
             return False
         
         sensor._data = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16) != 0
+
+        return True
+    
+    def read_modbus_data_unsigned16bit(self, sensor):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=sensor._slaveId, address=sensor._address, count=1)
+        if data_package.isError():
+            _LOGGER.debug(f'Data error at start address:{sensor._address} Name:{sensor.entity_description.key}')
+            return False
+        
+        sensor._data = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.UINT16)
+
+        return True
+    
+    def read_modbus_data_signed16bit(self, sensor):
+        """start reading data"""
+        data_package = self.read_holding_registers(unit=sensor._slaveId, address=sensor._address, count=1)
+        if data_package.isError():
+            _LOGGER.debug(f'Data error at start address:{sensor._address} Name:{sensor.entity_description.key}')
+            return False
+        
+        sensor._data = self._client.convert_from_registers(data_package.registers, self._client.DATATYPE.INT16)
 
         return True
     

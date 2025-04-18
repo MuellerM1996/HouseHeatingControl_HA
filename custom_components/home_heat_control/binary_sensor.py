@@ -9,7 +9,7 @@ from homeassistant.const import (
     CONF_NAME,
     STATE_ON,
     STATE_OFF,
-    STATE_UNKNOWN
+    STATE_UNAVAILABLE
 )
 from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
@@ -40,9 +40,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 conf_name,
                 hub,
                 device_info,
-                sensor_info[0],
-                sensor_info[1],
-                sensor_info[2],
+                sensor_info[0],     #slave ID
+                sensor_info[1],     #modbus address
+                sensor_info[2],     #sensor description
             )
             entities.append(sensor)
 
@@ -91,7 +91,7 @@ class HHCBinarySensor(BinarySensorEntity):
         if self._data is not None:
             self._attr_is_on = self._data
         else:
-            return STATE_UNKNOWN
+            return STATE_UNAVAILABLE
         if self._attr_is_on:
             return STATE_ON
         else:

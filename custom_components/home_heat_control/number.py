@@ -1,23 +1,28 @@
 import logging
 from typing import Optional, Dict, Any
+
 from .const import (
     HHCSENSOR_TYPES,
     DOMAIN,
     ATTR_MANUFACTURER,
 )
+
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadBuilder
+
 from homeassistant.const import (
     CONF_NAME,
     STATE_UNAVAILABLE
     )
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorEntityDescription
+from homeassistant.components.number import (
+    NumberEntity,
+    NumberEntityDescription
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(hass, entry, async_add_entities) -> None:
     conf_name = entry.data[CONF_NAME]
     hub = hass.data[DOMAIN][conf_name]["hub"]
 
@@ -30,32 +35,34 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = []
     for sensor_info in HHCSENSOR_TYPES:
         sensorType = str(type(sensor_info[2])).split(".")[-1].split("'")[0]
-        sensorTypeCompare = str(SensorEntityDescription).split(".")[-1].split("'")[0]
+        sensorTypeCompare = str(NumberEntityDescription).split(".")[-1].split("'")[0]
         if (sensorType == sensorTypeCompare):
-            sensor = HHCSensor(
+            sensor = HHCNumber(
                 conf_name,
                 hub,
                 device_info,
                 sensor_info[0],     #slave ID
                 sensor_info[1],     #modbus address
                 sensor_info[2],     #sensor description
+                sensor_info[3],     #modbus scaling factor
             )
             entities.append(sensor)
 
     async_add_entities(entities)
     return True
 
-class HHCSensor(SensorEntity):
-    """Representation of an HHC sensor."""
+class HHCNumber(NumberEntity):
+    """Representation of an HHC number."""
 
-    def __init__(self, platform_name, hub, device_info, slaveId: int, address: int, sensor: SensorEntityDescription):
-        """Initialize the sensor."""
+    def __init__(self, platform_name, hub, device_info, slaveId: int, address: int, sensor: NumberEntityDescription, modbus_scaling: float) -> None:
+        """Initialize the selector."""
         self.entity_description = sensor
         self._platform_name = platform_name
         self._hub = hub
         self._device_info = device_info
         self._slaveId = slaveId
         self._address = address
+        self._modbus_scaling = modbus_scaling
         self._data = None
 
     async def async_added_to_hass(self):
@@ -92,12 +99,25 @@ class HHCSensor(SensorEntity):
             if isinstance(self._data, float) or isinstance(self._data, int):
                 return self.entity_description.unit_of_measurement
         return None
-
+    
     @property
-    def state(self):
-        """Return the state of the sensor."""
+    def native_value(self) -> float:
         if self._data is not None:
-            return self._data
+            return self._data * self._modbus_scaling
         else:
             return STATE_UNAVAILABLE
-        
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Change the selected value."""
+        payloadData = int(value / self._modbus_scaling)
+
+        _LOGGER.debug(f"try to write: Value:{value}, Name:{self.entity_description.key}, Address:{self._address}")
+
+        #TODO: negative values are not working -> exception
+        response = self._hub.write_register(unit=self._slaveId, address=self._address, payload=payloadData)
+        if response.isError():
+            _LOGGER.error(f"Could not write: Value:{value}, Name:{self.entity_description.key}, Address:{self._address}")
+            return
+
+        self._data = value / self._modbus_scaling
+        self.async_write_ha_state()

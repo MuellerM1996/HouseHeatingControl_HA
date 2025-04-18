@@ -1,7 +1,5 @@
 """The HHC Modbus Integration."""
-import asyncio
 import logging
-from typing import Optional
 
 import voluptuous as vol
 
@@ -36,7 +34,7 @@ CONFIG_SCHEMA = vol.Schema(
     {DOMAIN: vol.Schema({cv.slug: HHC_SCHEMA})}, extra=vol.ALLOW_EXTRA
 )
 
-PLATFORMS = ["sensor", "binary_sensor", "switch", "button"]
+PLATFORMS = ["sensor", "binary_sensor", "switch", "button", "number"]
 
 
 async def async_setup(hass, config):
