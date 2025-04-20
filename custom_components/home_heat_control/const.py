@@ -59,7 +59,7 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 76, NumberEntityDescription(name="HK2 Kurve Neigung", key="heatcircuit_2_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],
     [DEFAULT_MODBUS_ADDRESS, 77, NumberEntityDescription(name="HK2 Kurve Niveau", key="heatcircuit_2_curve_niveau", unit_of_measurement=UnitOfTemperature.KELVIN, mode=NumberMode.BOX, native_min_value=-30, native_max_value=30, native_step=1, icon="mdi:home-thermometer"), 1],
     [DEFAULT_MODBUS_ADDRESS, 78, NumberEntityDescription(name="HK2 Kurve Zieltemperatur Tag", key="heatcircuit_2_curve_targettemperature_day", unit_of_measurement=UnitOfTemperature.CELSIUS, mode=NumberMode.BOX, native_min_value=0, native_max_value=40, native_step=1, icon="mdi:sun-thermometer"), 1],
-    [DEFAULT_MODBUS_ADDRESS, 579, NumberEntityDescription(name="HK2 Kurve Zieltemperatur Nacht", key="heatcircuit_2_curve_targettemperature_night", unit_of_measurement=UnitOfTemperature.CELSIUS, mode=NumberMode.BOX, native_min_value=0, native_max_value=40, native_step=1, icon="mdi:snowflake-thermometer"), 1],
+    [DEFAULT_MODBUS_ADDRESS, 79, NumberEntityDescription(name="HK2 Kurve Zieltemperatur Nacht", key="heatcircuit_2_curve_targettemperature_night", unit_of_measurement=UnitOfTemperature.CELSIUS, mode=NumberMode.BOX, native_min_value=0, native_max_value=40, native_step=1, icon="mdi:snowflake-thermometer"), 1],
     #HC3
     [DEFAULT_MODBUS_ADDRESS, 80, SensorEntityDescription(name="HK3 Status" , key="heatcircuit_3_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 81, SensorEntityDescription(name="HK3 Pumpenstatus" , key="heatcircuit_3_pumpstatus", device_class=SensorDeviceClass.ENUM)],
