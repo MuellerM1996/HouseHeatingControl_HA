@@ -3,7 +3,8 @@ from homeassistant.components.sensor.const import SensorDeviceClass
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntityDescription
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntityDescription
 from homeassistant.components.button import ButtonEntityDescription
-from homeassistant.components.number import NumberDeviceClass, NumberEntityDescription, NumberMode
+from homeassistant.components.number import NumberEntityDescription, NumberMode
+from homeassistant.components.time import TimeEntityDescription
 from homeassistant.const import (
     UnitOfTemperature,
     PERCENTAGE
@@ -42,6 +43,10 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 46, SensorEntityDescription(name="HK1 Vorlauftemperatur", key="heatcircuit_1_forerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 47, SensorEntityDescription(name="HK1 Rücklauftemperatur", key="heatcircuit_1_returnflowTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     #TODO: Timer
+    [DEFAULT_MODBUS_ADDRESS, 51, TimeEntityDescription(name="HK1 Timer 1 Start", key="heatcircuit_1_timer_1_start", icon="mdi:timer")],
+    [DEFAULT_MODBUS_ADDRESS, 52, TimeEntityDescription(name="HK1 Timer 1 Stop", key="heatcircuit_1_timer_1_stop", icon="mdi:timer-off")],
+    [DEFAULT_MODBUS_ADDRESS, 54, TimeEntityDescription(name="HK1 Timer 2 Start", key="heatcircuit_1_timer_2_start", icon="mdi:timer")],
+    [DEFAULT_MODBUS_ADDRESS, 55, TimeEntityDescription(name="HK1 Timer 2 Stop", key="heatcircuit_1_timer_2_stop", icon="mdi:timer-off")],
     [DEFAULT_MODBUS_ADDRESS, 56, NumberEntityDescription(name="HK1 Kurve Neigung", key="heatcircuit_1_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],
     [DEFAULT_MODBUS_ADDRESS, 57, NumberEntityDescription(name="HK1 Kurve Niveau", key="heatcircuit_1_curve_niveau", unit_of_measurement=UnitOfTemperature.KELVIN, mode=NumberMode.BOX, native_min_value=-30, native_max_value=30, native_step=1, icon="mdi:home-thermometer"), 1],
     [DEFAULT_MODBUS_ADDRESS, 58, NumberEntityDescription(name="HK1 Kurve Zieltemperatur Tag", key="heatcircuit_1_curve_targettemperature_day", unit_of_measurement=UnitOfTemperature.CELSIUS, mode=NumberMode.BOX, native_min_value=0, native_max_value=40, native_step=1, icon="mdi:sun-thermometer"), 1],
@@ -56,6 +61,10 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 66, SensorEntityDescription(name="HK2 Vorlauftemperatur", key="heatcircuit_2_forerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 67, SensorEntityDescription(name="HK2 Rücklauftemperatur", key="heatcircuit_2_returnflowTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     #TODO: Timer
+    [DEFAULT_MODBUS_ADDRESS, 71, TimeEntityDescription(name="HK2 Timer 1 Start", key="heatcircuit_2_timer_1_start", icon="mdi:timer")],
+    [DEFAULT_MODBUS_ADDRESS, 72, TimeEntityDescription(name="HK2 Timer 1 Stop", key="heatcircuit_2_timer_1_stop", icon="mdi:timer-off")],
+    [DEFAULT_MODBUS_ADDRESS, 74, TimeEntityDescription(name="HK2 Timer 2 Start", key="heatcircuit_2_timer_2_start", icon="mdi:timer")],
+    [DEFAULT_MODBUS_ADDRESS, 75, TimeEntityDescription(name="HK2 Timer 2 Stop", key="heatcircuit_2_timer_2_stop", icon="mdi:timer-off")],
     [DEFAULT_MODBUS_ADDRESS, 76, NumberEntityDescription(name="HK2 Kurve Neigung", key="heatcircuit_2_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],
     [DEFAULT_MODBUS_ADDRESS, 77, NumberEntityDescription(name="HK2 Kurve Niveau", key="heatcircuit_2_curve_niveau", unit_of_measurement=UnitOfTemperature.KELVIN, mode=NumberMode.BOX, native_min_value=-30, native_max_value=30, native_step=1, icon="mdi:home-thermometer"), 1],
     [DEFAULT_MODBUS_ADDRESS, 78, NumberEntityDescription(name="HK2 Kurve Zieltemperatur Tag", key="heatcircuit_2_curve_targettemperature_day", unit_of_measurement=UnitOfTemperature.CELSIUS, mode=NumberMode.BOX, native_min_value=0, native_max_value=40, native_step=1, icon="mdi:sun-thermometer"), 1],
@@ -70,6 +79,10 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 86, SensorEntityDescription(name="HK3 Vorlauftemperatur", key="heatcircuit_3_forerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 87, SensorEntityDescription(name="HK3 Rücklauftemperatur", key="heatcircuit_3_returnflowTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     #TODO: Timer
+    [DEFAULT_MODBUS_ADDRESS, 91, TimeEntityDescription(name="HK3 Timer 1 Start", key="heatcircuit_3_timer_1_start", icon="mdi:timer")],
+    [DEFAULT_MODBUS_ADDRESS, 92, TimeEntityDescription(name="HK3 Timer 1 Stop", key="heatcircuit_3_timer_1_stop", icon="mdi:timer-off")],
+    [DEFAULT_MODBUS_ADDRESS, 94, TimeEntityDescription(name="HK3 Timer 2 Start", key="heatcircuit_3_timer_2_start", icon="mdi:timer")],
+    [DEFAULT_MODBUS_ADDRESS, 95, TimeEntityDescription(name="HK3 Timer 2 Stop", key="heatcircuit_3_timer_2_stop", icon="mdi:timer-off")],
     [DEFAULT_MODBUS_ADDRESS, 96, NumberEntityDescription(name="HK3 Kurve Neigung", key="heatcircuit_3_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],
     [DEFAULT_MODBUS_ADDRESS, 97, NumberEntityDescription(name="HK3 Kurve Niveau", key="heatcircuit_3_curve_niveau", unit_of_measurement=UnitOfTemperature.KELVIN, mode=NumberMode.BOX, native_min_value=-30, native_max_value=30, native_step=1, icon="mdi:home-thermometer"), 1],
     [DEFAULT_MODBUS_ADDRESS, 98, NumberEntityDescription(name="HK3 Kurve Zieltemperatur Tag", key="heatcircuit_3_curve_targettemperature_day", unit_of_measurement=UnitOfTemperature.CELSIUS, mode=NumberMode.BOX, native_min_value=0, native_max_value=40, native_step=1, icon="mdi:sun-thermometer"), 1],
