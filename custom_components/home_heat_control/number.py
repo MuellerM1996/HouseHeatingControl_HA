@@ -94,7 +94,7 @@ class HHCNumber(NumberEntity):
         return f"{self._platform_name}_{self.entity_description.key}"
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         if self._data is not None:
             if isinstance(self._data, float) or isinstance(self._data, int):
                 return self.entity_description.unit_of_measurement
