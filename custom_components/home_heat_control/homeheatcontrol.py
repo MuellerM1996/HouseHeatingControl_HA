@@ -604,7 +604,6 @@ class HomeHeatControl:
 
     def read_modbus_data_warmwater_circulation_circuit_status(self, sensor):
         """start reading data"""
-        sensor = self.get_sensor_by_name("warmwater_circulation_circuit1_status")
         data_package = self.read_holding_registers(unit=sensor._slaveId, address=sensor._address, count=1)      
         if data_package.isError():
             _LOGGER.debug(f'Data error at start address:{sensor._address} Name:{sensor.entity_description.key}')
