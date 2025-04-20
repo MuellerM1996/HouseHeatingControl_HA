@@ -109,14 +109,14 @@ class HHCNumber(NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Change the selected value."""
-        payloadData = int(value / self._modbus_scaling)
+        builder = BinaryPayloadBuilder(byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+        builder.add_16bit_int(int(value / self._modbus_scaling))
 
-        _LOGGER.debug(f"try to write: Value:{value}, Name:{self.entity_description.key}, Address:{self._address}")
+        _LOGGER.debug(f"try to write: Value:{value}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
 
-        #TODO: negative values are not working -> exception
-        response = self._hub.write_register(unit=self._slaveId, address=self._address, payload=payloadData)
+        response = self._hub.write_registers(unit=self._slaveId, address=self._address, payload=builder.to_registers())
         if response.isError():
-            _LOGGER.error(f"Could not write: Value:{value}, Name:{self.entity_description.key}, Address:{self._address}")
+            _LOGGER.error(f"Could not write: Value:{value}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
             return
 
         self._data = value / self._modbus_scaling

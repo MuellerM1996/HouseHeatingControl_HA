@@ -123,10 +123,13 @@ class HomeHeatControl:
 
     def read_holding_registers(self, unit, address, count):
         """Read holding registers."""
-        with self._lock:
-            return self._client.read_holding_registers(
-                address=address, count=count, slave=unit
-            )
+        try:
+            with self._lock:
+                return self._client.read_holding_registers(
+                    address=address, count=count, slave=unit
+                )
+        except BrokenPipeError:
+            self.close()
 
     def write_registers(self, unit, address, payload):
         """Write registers."""
