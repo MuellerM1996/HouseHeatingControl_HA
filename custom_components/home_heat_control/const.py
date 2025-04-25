@@ -5,6 +5,7 @@ from homeassistant.components.switch import SwitchDeviceClass, SwitchEntityDescr
 from homeassistant.components.button import ButtonEntityDescription
 from homeassistant.components.number import NumberEntityDescription, NumberMode
 from homeassistant.components.time import TimeEntityDescription
+from homeassistant.components.select import SelectEntityDescription
 from homeassistant.const import (
     UnitOfTemperature,
     PERCENTAGE
@@ -42,9 +43,10 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 45, SensorEntityDescription(name="HK1 Zielvorlauftemperatur", key="heatcircuit_1_targetForerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 46, SensorEntityDescription(name="HK1 Vorlauftemperatur", key="heatcircuit_1_forerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 47, SensorEntityDescription(name="HK1 Rücklauftemperatur", key="heatcircuit_1_returnflowTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
-    #TODO: Timer
+    [DEFAULT_MODBUS_ADDRESS, 50, SelectEntityDescription(name="HK1 Timer 1 Modus", key="heatcircuit_1_timer_1_mode", options=["Nicht benutzt", "Heizung AUS", "Nachtabsenkung"],icon="mdi:timer-cog")],
     [DEFAULT_MODBUS_ADDRESS, 51, TimeEntityDescription(name="HK1 Timer 1 Start", key="heatcircuit_1_timer_1_start", icon="mdi:timer")],
     [DEFAULT_MODBUS_ADDRESS, 52, TimeEntityDescription(name="HK1 Timer 1 Stop", key="heatcircuit_1_timer_1_stop", icon="mdi:timer-off")],
+    [DEFAULT_MODBUS_ADDRESS, 53, SelectEntityDescription(name="HK1 Timer 2 Modus", key="heatcircuit_1_timer_2_mode", options=["Nicht benutzt", "Heizung AUS", "Nachtabsenkung"],icon="mdi:timer-cog")],
     [DEFAULT_MODBUS_ADDRESS, 54, TimeEntityDescription(name="HK1 Timer 2 Start", key="heatcircuit_1_timer_2_start", icon="mdi:timer")],
     [DEFAULT_MODBUS_ADDRESS, 55, TimeEntityDescription(name="HK1 Timer 2 Stop", key="heatcircuit_1_timer_2_stop", icon="mdi:timer-off")],
     [DEFAULT_MODBUS_ADDRESS, 56, NumberEntityDescription(name="HK1 Kurve Neigung", key="heatcircuit_1_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],
@@ -60,9 +62,10 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 65, SensorEntityDescription(name="HK2 Zielvorlauftemperatur", key="heatcircuit_2_targetForerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 66, SensorEntityDescription(name="HK2 Vorlauftemperatur", key="heatcircuit_2_forerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 67, SensorEntityDescription(name="HK2 Rücklauftemperatur", key="heatcircuit_2_returnflowTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
-    #TODO: Timer
+    [DEFAULT_MODBUS_ADDRESS, 70, SelectEntityDescription(name="HK2 Timer 1 Modus", key="heatcircuit_2_timer_1_mode", options=["Nicht benutzt", "Heizung AUS", "Nachtabsenkung"],icon="mdi:timer-cog")],
     [DEFAULT_MODBUS_ADDRESS, 71, TimeEntityDescription(name="HK2 Timer 1 Start", key="heatcircuit_2_timer_1_start", icon="mdi:timer")],
     [DEFAULT_MODBUS_ADDRESS, 72, TimeEntityDescription(name="HK2 Timer 1 Stop", key="heatcircuit_2_timer_1_stop", icon="mdi:timer-off")],
+    [DEFAULT_MODBUS_ADDRESS, 73, SelectEntityDescription(name="HK2 Timer 2 Modus", key="heatcircuit_2_timer_2_mode", options=["Nicht benutzt", "Heizung AUS", "Nachtabsenkung"],icon="mdi:timer-cog")],
     [DEFAULT_MODBUS_ADDRESS, 74, TimeEntityDescription(name="HK2 Timer 2 Start", key="heatcircuit_2_timer_2_start", icon="mdi:timer")],
     [DEFAULT_MODBUS_ADDRESS, 75, TimeEntityDescription(name="HK2 Timer 2 Stop", key="heatcircuit_2_timer_2_stop", icon="mdi:timer-off")],
     [DEFAULT_MODBUS_ADDRESS, 76, NumberEntityDescription(name="HK2 Kurve Neigung", key="heatcircuit_2_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],
@@ -78,9 +81,10 @@ HHCSENSOR_TYPES = [
     [DEFAULT_MODBUS_ADDRESS, 85, SensorEntityDescription(name="HK3 Zielvorlauftemperatur", key="heatcircuit_3_targetForerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 86, SensorEntityDescription(name="HK3 Vorlauftemperatur", key="heatcircuit_3_forerunTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
     [DEFAULT_MODBUS_ADDRESS, 87, SensorEntityDescription(name="HK3 Rücklauftemperatur", key="heatcircuit_3_returnflowTemperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
-    #TODO: Timer
+    [DEFAULT_MODBUS_ADDRESS, 90, SelectEntityDescription(name="HK3 Timer 1 Modus", key="heatcircuit_3_timer_1_mode", options=["Nicht benutzt", "Heizung AUS", "Nachtabsenkung"],icon="mdi:timer-cog")],
     [DEFAULT_MODBUS_ADDRESS, 91, TimeEntityDescription(name="HK3 Timer 1 Start", key="heatcircuit_3_timer_1_start", icon="mdi:timer")],
     [DEFAULT_MODBUS_ADDRESS, 92, TimeEntityDescription(name="HK3 Timer 1 Stop", key="heatcircuit_3_timer_1_stop", icon="mdi:timer-off")],
+    [DEFAULT_MODBUS_ADDRESS, 93, SelectEntityDescription(name="HK3 Timer 2 Modus", key="heatcircuit_3_timer_2_mode", options=["Nicht benutzt", "Heizung AUS", "Nachtabsenkung"],icon="mdi:timer-cog")],
     [DEFAULT_MODBUS_ADDRESS, 94, TimeEntityDescription(name="HK3 Timer 2 Start", key="heatcircuit_3_timer_2_start", icon="mdi:timer")],
     [DEFAULT_MODBUS_ADDRESS, 95, TimeEntityDescription(name="HK3 Timer 2 Stop", key="heatcircuit_3_timer_2_stop", icon="mdi:timer-off")],
     [DEFAULT_MODBUS_ADDRESS, 96, NumberEntityDescription(name="HK3 Kurve Neigung", key="heatcircuit_3_curve_inclination", mode=NumberMode.BOX, native_min_value=0.2, native_max_value=3.5, native_step=0.1, icon="mdi:home-thermometer"), 0.1],

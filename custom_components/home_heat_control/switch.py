@@ -98,7 +98,7 @@ class HHCSwitch(SwitchEntity):
         if self._attr_is_on:
             return STATE_ON
         else:
-            return STATE_OFF    
+            return STATE_OFF
     
     async def async_turn_on(self) -> None:
         """Turn the entity on."""

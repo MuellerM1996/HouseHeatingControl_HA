@@ -1,6 +1,5 @@
 import logging
 from typing import Optional, Dict, Any
-from datetime import time
 
 from .const import (
     HHCSENSOR_TYPES,
@@ -13,11 +12,12 @@ from pymodbus.payload import BinaryPayloadBuilder
 
 from homeassistant.const import (
     CONF_NAME,
+    STATE_OK,
     STATE_UNAVAILABLE
     )
-from homeassistant.components.time import (
-    TimeEntity,
-    TimeEntityDescription
+from homeassistant.components.select import (
+    SelectEntity,
+    SelectEntityDescription
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,9 +36,9 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     entities = []
     for sensor_info in HHCSENSOR_TYPES:
         sensorType = str(type(sensor_info[2])).split(".")[-1].split("'")[0]
-        sensorTypeCompare = str(TimeEntityDescription).split(".")[-1].split("'")[0]
+        sensorTypeCompare = str(SelectEntityDescription).split(".")[-1].split("'")[0]
         if (sensorType == sensorTypeCompare):
-            sensor = HHC_Time(
+            sensor = HHCSelect(
                 conf_name,
                 hub,
                 device_info,
@@ -51,10 +51,10 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     async_add_entities(entities)
     return True
 
-class HHC_Time(TimeEntity):
-    """Representation of an HHC Time."""
+class HHCSelect(SelectEntity):
+    """Representation of an HHC number."""
 
-    def __init__(self, platform_name, hub, device_info, slaveId: int, address: int, sensor: TimeEntityDescription) -> None:
+    def __init__(self, platform_name, hub, device_info, slaveId: int, address: int, sensor: SelectEntityDescription) -> None:
         """Initialize the selector."""
         self.entity_description = sensor
         self._platform_name = platform_name
@@ -94,43 +94,37 @@ class HHC_Time(TimeEntity):
     
     @property
     def state(self) -> str | None:
-        if self._data is not None and self.native_value is not None:
-            return self.native_value.isoformat()
+        if self._data is not None:
+            return self.current_option
         else:
             return STATE_UNAVAILABLE
     
     @property
-    def native_value(self) -> time:
-        if self._data is not None:
-            try:
-                timedata = time(
-                    hour=(self._data >> 8) & 0xFF,
-                    minute=self._data & 0xFF
-                )
-                return timedata
-            except:
-                #exception if reported time in invalid so that the entity is still available and can be changed
-                timedata = time(
-                    hour=0,
-                    minute=0
-                )
-                return timedata
+    def current_option(self) -> str | None:
+        if self._data == 1:
+            return self.options[1]
+        elif self._data == 2:
+            return self.options[2]
         else:
-            return None
+            return self.options[0]
 
-    async def async_set_value(self, value: time) -> None:
+    async def async_select_option(self, option: str) -> None:
         """Change the selected value."""
-        temp = value.hour << 8
-        temp = temp + value.minute
         builder = BinaryPayloadBuilder(byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        builder.add_16bit_uint(int(temp))
+        temp = -1
+        try:
+            temp = self.options.index(option)
+        except:
+            _LOGGER.error(f"Could not write: Option:{option}, Name:{self.entity_description.key}, Address:{self._address} - Option not in list")
+            return
+        builder.add_16bit_uint(temp)
 
-        _LOGGER.debug(f"try to write: Value:{value}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
+        _LOGGER.debug(f"try to write: Value:{option}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
 
         response = self._hub.write_registers(unit=self._slaveId, address=self._address, payload=builder.to_registers())
         if response.isError():
-            _LOGGER.error(f"Could not write: Value:{value}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
+            _LOGGER.error(f"Could not write: Value:{option}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
             return
 
-        self._data = builder.to_registers()[0]
+        self._data = temp
         self.async_write_ha_state()
