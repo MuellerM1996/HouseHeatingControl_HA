@@ -119,10 +119,11 @@ class HHC_Time(TimeEntity):
             return None
 
     async def async_set_value(self, value: time) -> None:
-        return
         """Change the selected value."""
+        temp = value.hour << 8
+        temp = temp + value.minute
         builder = BinaryPayloadBuilder(byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        builder.add_16bit_int(int(value / self._modbus_scaling))
+        builder.add_16bit_int(int(temp))
 
         _LOGGER.debug(f"try to write: Value:{value}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
 
@@ -131,5 +132,5 @@ class HHC_Time(TimeEntity):
             _LOGGER.error(f"Could not write: Value:{value}/{builder.to_registers()}, Name:{self.entity_description.key}, Address:{self._address}")
             return
 
-        self._data = value / self._modbus_scaling
+        self._data = builder.to_registers()[0]
         self.async_write_ha_state()
