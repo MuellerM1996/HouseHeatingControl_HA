@@ -1,13 +1,15 @@
 import logging
 import threading
 from typing import Optional
-from datetime import timedelta
+from datetime import timedelta, datetime
 
+import pymodbus
 from pymodbus.client import ModbusTcpClient
-from pymodbus.constants import Endian
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_time_interval
+
+from .const import DEFAULT_MODBUS_TIMEOUT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,6 +32,7 @@ class HomeHeatControl:
         self._name = name
         self._address = address
         self._scan_interval = timedelta(seconds=scan_interval)
+        self._last_data_received_timestamp = datetime(year=2000, month=1, day=1)
         self._unsub_interval_method = None
         self._sensors = []
             
@@ -58,11 +61,21 @@ class HomeHeatControl:
         """Time to update."""
         result : bool = await self._hass.async_add_executor_job(self._refresh_modbus_data)
         if result:
+            self._last_data_received_timestamp = datetime.now()
             for sensor in self._sensors:
                 _modbus_data_updated = getattr(sensor, "_modbus_data_updated", None)
                 if callable(_modbus_data_updated):
                     sensor._modbus_data_updated()
-
+        
+        if (datetime.now() - self._last_data_received_timestamp).total_seconds() > DEFAULT_MODBUS_TIMEOUT:
+            #set all data to None so entities get unavailable
+            for sensor in self._sensors:
+                _data = getattr(sensor, "_data", None)
+                if _data is not None:
+                    sensor._data = None
+                _modbus_data_updated = getattr(sensor, "_modbus_data_updated", None)
+                if callable(_modbus_data_updated):
+                    sensor._modbus_data_updated()
 
     def _refresh_modbus_data(self, _now: Optional[int] = None) -> bool:
         """Time to update."""
@@ -123,13 +136,10 @@ class HomeHeatControl:
 
     def read_holding_registers(self, unit, address, count):
         """Read holding registers."""
-        try:
-            with self._lock:
-                return self._client.read_holding_registers(
-                    address=address, count=count, slave=unit
-                )
-        except BrokenPipeError:
-            self.close()
+        with self._lock:
+            return self._client.read_holding_registers(
+                address=address, count=count, slave=unit
+            )
 
     def write_registers(self, unit, address, payload):
         """Write registers."""
@@ -156,110 +166,115 @@ class HomeHeatControl:
             
     def read_modbus_data(self):
         _LOGGER.debug("Modbus read Start")
-        result = (
-            self.read_modbus_data_sw_Version(),
-            self.read_modbus_data_bool(self.get_sensor_by_name("dtcactive")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("outsidetemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("room1temperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("room2temperature")),
-            self.read_modbus_data_doorbellstatus(),
-            self.read_modbus_data_bool(self.get_sensor_by_name("heatcontrolmanagement_enabled")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("heatcontrolmanagement_lowTemperatureWarning")),
-            self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_1_status")),
-            self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_1_pumpstatus")),
-            self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_1_mixerstatus")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("heatcircuit_1_mixernormed")),
-            self.read_modbus_data_mixerposition(self.get_sensor_by_name("heatcircuit_1_mixerposition")),
-            self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_1_targetForerunTemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_1_forerunTemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_1_returnflowTemperature")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_1_mode")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_1_start")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_1_stop")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_2_mode")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_2_start")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_2_stop")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_inclination")),
-            self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_1_curve_niveau")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_targettemperature_day")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_targettemperature_night")),
-            self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_2_status")),
-            self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_2_pumpstatus")),
-            self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_2_mixerstatus")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("heatcircuit_2_mixernormed")),
-            self.read_modbus_data_mixerposition(self.get_sensor_by_name("heatcircuit_2_mixerposition")),
-            self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_2_targetForerunTemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_2_forerunTemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_2_returnflowTemperature")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_1_mode")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_1_start")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_1_stop")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_2_mode")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_2_start")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_2_stop")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_inclination")),
-            self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_2_curve_niveau")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_targettemperature_day")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_targettemperature_night")),
-            self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_3_status")),
-            self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_3_pumpstatus")),
-            self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_3_mixerstatus")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("heatcircuit_3_mixernormed")),
-            self.read_modbus_data_mixerposition(self.get_sensor_by_name("heatcircuit_3_mixerposition")),
-            self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_3_targetForerunTemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_3_forerunTemperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_3_returnflowTemperature")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_1_mode")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_1_start")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_1_stop")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_2_mode")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_2_start")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_2_stop")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_inclination")),
-            self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_3_curve_niveau")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_targettemperature_day")),
-            self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_targettemperature_night")),
-            self.read_modbus_data_bufferstorage_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_top")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_middletop")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_middlebottom")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_bottom")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_top")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_middletop")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_middlebottom")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_bottom")),
-            self.read_modbus_data_mixerstatus(self.get_sensor_by_name("bufferstorage_charge_or_switch_mixerstatus")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("bufferstorage_charge_or_switch_mixernormed")),
-            self.read_modbus_data_mixerposition(self.get_sensor_by_name("bufferstorage_charge_or_switch_mixerposition")),
-            self.read_modbus_data_pumpstatus(self.get_sensor_by_name("bufferstorage_chargepumpstatus")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_chargewatertemperature")),
-            self.read_modbus_data_bufferstorage_filllevel(self.get_sensor_by_name("bufferstorage_1_filllevel")),
-            self.read_modbus_data_bufferstorage_filllevel(self.get_sensor_by_name("bufferstorage_2_filllevel")),
-            self.read_modbus_data_bufferstorage_filllevel(self.get_sensor_by_name("bufferstorage_combined_filllevel")),
-            self.read_modbus_data_bufferstorage_activestatus(),
-            self.read_modbus_data_valvestatus(self.get_sensor_by_name("bufferstorage_chargevalvestatus")),
-            self.read_modbus_data_bufferstorage_chargestatus(),
-            self.read_modbus_data_bool(self.get_sensor_by_name("bufferstorage_chargeElectricOnly")),
-            self.read_modbus_data_warmwater_boiler_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_boiler_temperature")),
-            self.read_modbus_data_pumpstatus(self.get_sensor_by_name("warmwater_boiler_chargepumpstatus")),
-            self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_boiler_valvestatus")),
-            self.read_modbus_data_bool(self.get_sensor_by_name("warmwater_bath_heatingactive")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_outputtemperature")),
-            self.read_modbus_data_pumpstatus(self.get_sensor_by_name("warmwater_circulation_pumpstatus")),
-            self.read_modbus_data_warmwater_circulation_circuit_status(self.get_sensor_by_name("warmwater_circulation_circuit1_status")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_circuit1_temperature")),
-            self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_circulation_circuit1_valvestatus")),
-            self.read_modbus_data_warmwater_circulation_circuit_status(self.get_sensor_by_name("warmwater_circulation_circuit2_status")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_circuit2_temperature")),
-            self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_circulation_circuit2_valvestatus")),
-            self.read_modbus_data_woodburner_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_exhaust_temperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_water_temperature")),
-            self.read_modbus_data_gasburner_status(),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_exhaust_temperature")),
-            self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_water_temperature")),
-        )
+        result = False
+        try:
+            result = (
+                self.read_modbus_data_sw_Version(),
+                self.read_modbus_data_bool(self.get_sensor_by_name("dtcactive")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("outsidetemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("room1temperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("room2temperature")),
+                self.read_modbus_data_doorbellstatus(),
+                self.read_modbus_data_bool(self.get_sensor_by_name("heatcontrolmanagement_enabled")),
+                self.read_modbus_data_bool(self.get_sensor_by_name("heatcontrolmanagement_lowTemperatureWarning")),
+                self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_1_status")),
+                self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_1_pumpstatus")),
+                self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_1_mixerstatus")),
+                self.read_modbus_data_bool(self.get_sensor_by_name("heatcircuit_1_mixernormed")),
+                self.read_modbus_data_mixerposition(self.get_sensor_by_name("heatcircuit_1_mixerposition")),
+                self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_1_targetForerunTemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_1_forerunTemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_1_returnflowTemperature")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_1_mode")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_1_start")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_1_stop")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_2_mode")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_2_start")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_timer_2_stop")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_inclination")),
+                self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_1_curve_niveau")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_targettemperature_day")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_1_curve_targettemperature_night")),
+                self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_2_status")),
+                self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_2_pumpstatus")),
+                self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_2_mixerstatus")),
+                self.read_modbus_data_bool(self.get_sensor_by_name("heatcircuit_2_mixernormed")),
+                self.read_modbus_data_mixerposition(self.get_sensor_by_name("heatcircuit_2_mixerposition")),
+                self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_2_targetForerunTemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_2_forerunTemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_2_returnflowTemperature")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_1_mode")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_1_start")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_1_stop")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_2_mode")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_2_start")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_timer_2_stop")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_inclination")),
+                self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_2_curve_niveau")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_targettemperature_day")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_2_curve_targettemperature_night")),
+                self.read_modbus_data_hc_status(self.get_sensor_by_name("heatcircuit_3_status")),
+                self.read_modbus_data_pumpstatus(self.get_sensor_by_name("heatcircuit_3_pumpstatus")),
+                self.read_modbus_data_mixerstatus(self.get_sensor_by_name("heatcircuit_3_mixerstatus")),
+                self.read_modbus_data_bool(self.get_sensor_by_name("heatcircuit_3_mixernormed")),
+                self.read_modbus_data_mixerposition(self.get_sensor_by_name("heatcircuit_3_mixerposition")),
+                self.read_modbus_data_hc_targetforeruntemperature(self.get_sensor_by_name("heatcircuit_3_targetForerunTemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_3_forerunTemperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("heatcircuit_3_returnflowTemperature")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_1_mode")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_1_start")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_1_stop")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_2_mode")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_2_start")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_timer_2_stop")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_inclination")),
+                self.read_modbus_data_signed16bit(self.get_sensor_by_name("heatcircuit_3_curve_niveau")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_targettemperature_day")),
+                self.read_modbus_data_unsigned16bit(self.get_sensor_by_name("heatcircuit_3_curve_targettemperature_night")),
+                self.read_modbus_data_bufferstorage_status(),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_top")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_middletop")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_middlebottom")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_1_temperature_bottom")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_top")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_middletop")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_middlebottom")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_2_temperature_bottom")),
+                self.read_modbus_data_mixerstatus(self.get_sensor_by_name("bufferstorage_charge_or_switch_mixerstatus")),
+                self.read_modbus_data_bool(self.get_sensor_by_name("bufferstorage_charge_or_switch_mixernormed")),
+                self.read_modbus_data_mixerposition(self.get_sensor_by_name("bufferstorage_charge_or_switch_mixerposition")),
+                self.read_modbus_data_pumpstatus(self.get_sensor_by_name("bufferstorage_chargepumpstatus")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("bufferstorage_chargewatertemperature")),
+                self.read_modbus_data_bufferstorage_filllevel(self.get_sensor_by_name("bufferstorage_1_filllevel")),
+                self.read_modbus_data_bufferstorage_filllevel(self.get_sensor_by_name("bufferstorage_2_filllevel")),
+                self.read_modbus_data_bufferstorage_filllevel(self.get_sensor_by_name("bufferstorage_combined_filllevel")),
+                self.read_modbus_data_bufferstorage_activestatus(),
+                self.read_modbus_data_valvestatus(self.get_sensor_by_name("bufferstorage_chargevalvestatus")),
+                self.read_modbus_data_bufferstorage_chargestatus(),
+                self.read_modbus_data_bool(self.get_sensor_by_name("bufferstorage_chargeElectricOnly")),
+                self.read_modbus_data_warmwater_boiler_status(),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_boiler_temperature")),
+                self.read_modbus_data_pumpstatus(self.get_sensor_by_name("warmwater_boiler_chargepumpstatus")),
+                self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_boiler_valvestatus")),
+                self.read_modbus_data_bool(self.get_sensor_by_name("warmwater_bath_heatingactive")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_outputtemperature")),
+                self.read_modbus_data_pumpstatus(self.get_sensor_by_name("warmwater_circulation_pumpstatus")),
+                self.read_modbus_data_warmwater_circulation_circuit_status(self.get_sensor_by_name("warmwater_circulation_circuit1_status")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_circuit1_temperature")),
+                self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_circulation_circuit1_valvestatus")),
+                self.read_modbus_data_warmwater_circulation_circuit_status(self.get_sensor_by_name("warmwater_circulation_circuit2_status")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("warmwater_circulation_circuit2_temperature")),
+                self.read_modbus_data_valvestatus(self.get_sensor_by_name("warmwater_circulation_circuit2_valvestatus")),
+                self.read_modbus_data_woodburner_status(),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_exhaust_temperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("woodburner_water_temperature")),
+                self.read_modbus_data_gasburner_status(),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_exhaust_temperature")),
+                self.read_modbus_data_temperaturesensor_signed16bit(self.get_sensor_by_name("gasburner_water_temperature")),
+            )
+        except (BrokenPipeError, pymodbus.exceptions.ModbusIOException):
+            self.close()
+
         _LOGGER.debug("Modbus read End")
         return result
 
