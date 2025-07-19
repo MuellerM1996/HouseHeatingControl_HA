@@ -141,7 +141,8 @@ HHCSENSOR_TYPES = [
     #Woodburner
     [DEFAULT_MODBUS_ADDRESS, 170, SensorEntityDescription(name="Holzofen Status", key="woodburner_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 171, SensorEntityDescription(name="Holzofen Abgastemperatur", key="woodburner_exhaust_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
-    [DEFAULT_MODBUS_ADDRESS, 172, SensorEntityDescription(name="Holzofen Wassertemperatur", key="woodburner_water_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
+    [DEFAULT_MODBUS_ADDRESS, 172, SensorEntityDescription(name="Holzofen Wassertemperatur", key="woodburner_water_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],    
+    [DEFAULT_MODBUS_ADDRESS, 173, ButtonEntityDescription(name="Holzofen Schüralarm beenden", key="woodburner_stop_schueralarm", icon="mdi:alarm-light-off"), 1],
     #Gasburner
     [DEFAULT_MODBUS_ADDRESS, 180, SensorEntityDescription(name="Gasbrenner Status", key="gasburner_status", device_class=SensorDeviceClass.ENUM)],
     [DEFAULT_MODBUS_ADDRESS, 181, SensorEntityDescription(name="Gasbrenner Abgastemperatur", key="gasburner_exhaust_temperature", state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit_of_measurement=UnitOfTemperature.CELSIUS)],
